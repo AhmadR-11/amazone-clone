@@ -1,14 +1,59 @@
 import { NextResponse } from 'next/server';
-import { getUserSessionFromCookies } from '@/lib/auth';
+import {
+  getUserSessionFromCookies,
+  getSessionTimeRemaining,
+  createGuestSessionToken,
+} from '@/lib/auth';
 
 export async function GET() {
-  const session = getUserSessionFromCookies();
-  if (!session) {
-    return NextResponse.json({ authenticated: false, user: null }, { status: 200 });
-  }
+  try {
+    const session = getUserSessionFromCookies();
 
-  return NextResponse.json({
-    authenticated: true,
-    user: session,
-  });
+    if (!session) {
+      // Create a guest session token
+      const { token, session: guestSession } = createGuestSessionToken();
+
+      const response = NextResponse.json({
+        isGuest: true,
+        sessionKey: guestSession.sessionKey || token,
+        sessionTimeRemaining: getSessionTimeRemaining(guestSession),
+        user: null,
+      });
+
+      response.cookies.set('guest_session_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 15, // 15 minutes
+      });
+
+      return response;
+    }
+
+    if (session.isGuest) {
+      return NextResponse.json({
+        isGuest: true,
+        sessionKey: session.sessionKey || 'guest',
+        sessionTimeRemaining: getSessionTimeRemaining(session),
+        user: null,
+      });
+    }
+
+    return NextResponse.json({
+      isGuest: false,
+      sessionTimeRemaining: getSessionTimeRemaining(session),
+      user: {
+        userId: session.userId,
+        name: session.name,
+        email: session.email,
+      },
+    });
+  } catch (error: any) {
+    console.error('Auth me error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }

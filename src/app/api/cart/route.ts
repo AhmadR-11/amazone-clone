@@ -1,71 +1,74 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db';
-import { getUserSessionFromCookies } from '@/lib/auth';
 import Cart from '@/lib/models/Cart';
-import Product from '@/lib/models/Product';
+import { getUserSessionFromCookies } from '@/lib/auth';
 
-export async function GET() {
+function getUserId(request: NextRequest): string | null {
+  const session = getUserSessionFromCookies();
+  if (session) return session.userId;
+  return null;
+}
+
+// GET /api/cart  - Fetch cart
+export async function GET(request: NextRequest) {
   try {
     const session = getUserSessionFromCookies();
     if (!session) {
-      return NextResponse.json({ authenticated: false, message: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ cart: { items: [] } });
     }
 
     await connectToDatabase();
-
-    const cart = await Cart.findOne({ userId: session.userId }).populate('items.productId');
-    return NextResponse.json({ authenticated: true, cart: cart || { items: [] } });
+    const cart = await Cart.findOne({ userId: session.userId });
+    return NextResponse.json({ cart: cart || { userId: session.userId, items: [] } });
   } catch (error: any) {
     console.error('Cart GET error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+// DELETE /api/cart  - Clear entire cart
+export async function DELETE(request: NextRequest) {
   try {
     const session = getUserSessionFromCookies();
     if (!session) {
-      return NextResponse.json({ authenticated: false, message: 'Authentication required to add items to cart' }, { status: 401 });
+      return NextResponse.json({ cart: { items: [] } });
     }
 
-    const { productId, quantity = 1, color, size } = await request.json();
-
-    if (!productId) {
-      return NextResponse.json({ error: 'ProductId is required' }, { status: 400 });
-    }
+    const { searchParams } = new URL(request.url);
+    const asin = searchParams.get('asin');
 
     await connectToDatabase();
 
-    const productExists = await Product.findById(productId);
-    if (!productExists) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-    }
+    if (asin) {
+      // Remove single item
+      const color = searchParams.get('color') || undefined;
+      const size = searchParams.get('size') || undefined;
 
-    let cart = await Cart.findOne({ userId: session.userId });
-
-    if (!cart) {
-      cart = await Cart.create({
-        userId: session.userId,
-        items: [{ productId, quantity, color, size }],
-      });
-    } else {
-      const existingItemIndex = cart.items.findIndex(
-        (item: any) => item.productId.toString() === productId && item.color === color && item.size === size
+      const cart = await Cart.findOneAndUpdate(
+        { userId: session.userId },
+        {
+          $pull: {
+            items: {
+              asin,
+              ...(color ? { color } : {}),
+              ...(size ? { size } : {}),
+            },
+          },
+        },
+        { new: true }
       );
-
-      if (existingItemIndex > -1) {
-        cart.items[existingItemIndex].quantity += quantity;
-      } else {
-        cart.items.push({ productId, quantity, color, size });
-      }
-
-      await cart.save();
+      return NextResponse.json({ cart: cart || { items: [] } });
     }
 
-    const updatedCart = await Cart.findOne({ userId: session.userId }).populate('items.productId');
-    return NextResponse.json({ success: true, cart: updatedCart });
+    // Clear all
+    const cart = await Cart.findOneAndUpdate(
+      { userId: session.userId },
+      { $set: { items: [] } },
+      { new: true, upsert: true }
+    );
+    return NextResponse.json({ cart });
   } catch (error: any) {
-    console.error('Cart POST error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Cart DELETE error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

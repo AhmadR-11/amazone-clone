@@ -2,54 +2,91 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectToDatabase } from '@/lib/db';
 import User from '@/lib/models/User';
-import { signToken } from '@/lib/auth';
+import { signToken, signRefreshToken } from '@/lib/auth';
+import { RegisterSchema } from '@/lib/validators';
 
 export async function POST(request: Request) {
   try {
-    const { name, email, password } = await request.json();
+    const body = await request.json();
+    const parsed = RegisterSchema.safeParse(body);
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Name, email, and password are required' }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, message: parsed.error.issues[0]?.message || 'Validation error' },
+        { status: 400 }
+      );
     }
+
+    const { name, email, password } = parsed.data;
 
     await connectToDatabase();
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return NextResponse.json({ error: 'User already exists with this email address' }, { status: 400 });
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing) {
+      return NextResponse.json(
+        { success: false, message: 'An account with this email already exists' },
+        { status: 409 }
+      );
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
+    const passwordHash = await bcrypt.hash(password, 12);
 
-    const newUser = await User.create({
-      name,
+    const user = await User.create({
+      name: name.trim(),
       email: email.toLowerCase(),
       passwordHash,
+      addresses: [],
+      searchHistory: [],
+      viewHistory: [],
     });
 
-    const token = signToken({
-      userId: newUser._id.toString(),
-      email: newUser.email,
-      name: newUser.name,
+    const accessToken = signToken({
+      userId: user._id.toString(),
+      email: user.email,
+      name: user.name,
     });
 
-    const response = NextResponse.json({
-      success: true,
-      user: { id: newUser._id, name: newUser.name, email: newUser.email },
+    const refreshToken = signRefreshToken({
+      userId: user._id.toString(),
+      email: user.email,
+      name: user.name,
     });
 
-    response.cookies.set('token', token, {
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    const response = NextResponse.json(
+      {
+        success: true,
+        user: { id: user._id, name: user.name, email: user.email },
+      },
+      { status: 201 }
+    );
+
+    response.cookies.set('token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 15,
     });
+
+    response.cookies.set('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+    });
+
+    response.cookies.delete('guest_session_token');
 
     return response;
   } catch (error: any) {
-    console.error('Registration error:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    console.error('Register error:', error);
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
