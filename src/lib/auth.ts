@@ -77,6 +77,13 @@ export function getUserSessionFromCookies(): UserSession | null {
     if (session) return session;
   }
 
+  // Try refresh token if access token is expired or missing
+  const refreshToken = cookieStore.get('refresh_token')?.value;
+  if (refreshToken) {
+    const refreshSession = verifyRefreshToken(refreshToken);
+    if (refreshSession) return refreshSession;
+  }
+
   // Try guest session
   const guestToken = cookieStore.get('guest_session_token')?.value;
   if (guestToken) {

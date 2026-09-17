@@ -15,21 +15,21 @@ export function middleware(request: NextRequest) {
 
   // Try verifying access token
   let session = accessToken ? verifyToken(accessToken) : null;
+  let response = NextResponse.next();
 
   // If access token expired but refresh token exists, try silent refresh
   if (!session && refreshToken) {
     const refreshPayload = verifyRefreshToken(refreshToken);
     if (refreshPayload) {
-      // Issue a new access token inline
+      session = refreshPayload;
       const newAccessToken = signToken({
         userId: refreshPayload.userId,
         email: refreshPayload.email,
         name: refreshPayload.name,
       });
 
-      // If heading to a protected page — allow and set new cookie
-      const response = isProtected
-        ? NextResponse.next()
+      response = isAuthPage
+        ? NextResponse.redirect(new URL('/', request.url))
         : NextResponse.next();
 
       response.cookies.set('token', newAccessToken, {
@@ -39,13 +39,6 @@ export function middleware(request: NextRequest) {
         path: '/',
         maxAge: 60 * 15,
       });
-
-      // If trying to access auth pages while already authenticated → redirect home
-      if (isAuthPage) {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
-
-      return response;
     }
   }
 
@@ -61,7 +54,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
