@@ -1,6 +1,6 @@
 /**
- * Cache layer — Redis when REDIS_URL is set, otherwise in-memory TTL Map.
- * Interface: get / set / del
+ * Cache layer — pure in-memory TTL Map (Redis not bundled to avoid webpack issues).
+ * For production Redis support, run a separate cache microservice.
  */
 
 type CacheEntry = { value: string; expiresAt: number };
@@ -8,42 +8,24 @@ type CacheEntry = { value: string; expiresAt: number };
 const memoryCache = new Map<string, CacheEntry>();
 
 // Periodically clean expired entries (every 5 minutes)
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of memoryCache.entries()) {
-      if (entry.expiresAt <= now) memoryCache.delete(key);
+if (typeof globalThis !== 'undefined' && typeof setInterval !== 'undefined') {
+  // Use a module-level singleton to avoid multiple intervals in dev HMR
+  const g = globalThis as typeof globalThis & { _cacheCleanupInterval?: ReturnType<typeof setInterval> };
+  if (!g._cacheCleanupInterval) {
+    g._cacheCleanupInterval = setInterval(() => {
+      const now = Date.now();
+      for (const [key, entry] of memoryCache.entries()) {
+        if (entry.expiresAt <= now) memoryCache.delete(key);
+      }
+    }, 5 * 60 * 1000);
+    // Don't block process exit
+    if (typeof g._cacheCleanupInterval?.unref === 'function') {
+      (g._cacheCleanupInterval as NodeJS.Timeout).unref();
     }
-  }, 5 * 60 * 1000);
-}
-
-async function getRedisClient() {
-  if (!process.env.REDIS_URL) return null;
-  try {
-    const req = eval('require');
-    const { createClient } = req('redis');
-    const client = createClient({ url: process.env.REDIS_URL });
-    await client.connect();
-    return client;
-  } catch {
-    return null;
   }
 }
 
 export async function cacheGet(key: string): Promise<string | null> {
-  // Try Redis first
-  const redis = await getRedisClient();
-  if (redis) {
-    try {
-      const val = await redis.get(key);
-      await redis.disconnect();
-      return val;
-    } catch {
-      await redis.disconnect().catch(() => {});
-    }
-  }
-
-  // In-memory fallback
   const entry = memoryCache.get(key);
   if (!entry) return null;
   if (entry.expiresAt <= Date.now()) {
@@ -54,18 +36,6 @@ export async function cacheGet(key: string): Promise<string | null> {
 }
 
 export async function cacheSet(key: string, value: string, ttlSeconds: number): Promise<void> {
-  const redis = await getRedisClient();
-  if (redis) {
-    try {
-      await redis.setEx(key, ttlSeconds, value);
-      await redis.disconnect();
-      return;
-    } catch {
-      await redis.disconnect().catch(() => {});
-    }
-  }
-
-  // In-memory fallback
   memoryCache.set(key, {
     value,
     expiresAt: Date.now() + ttlSeconds * 1000,
@@ -73,16 +43,6 @@ export async function cacheSet(key: string, value: string, ttlSeconds: number): 
 }
 
 export async function cacheDel(key: string): Promise<void> {
-  const redis = await getRedisClient();
-  if (redis) {
-    try {
-      await redis.del(key);
-      await redis.disconnect();
-      return;
-    } catch {
-      await redis.disconnect().catch(() => {});
-    }
-  }
   memoryCache.delete(key);
 }
 
@@ -98,4 +58,10 @@ export async function cacheGetJSON<T>(key: string): Promise<T | null> {
 
 export async function cacheSetJSON<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
   await cacheSet(key, JSON.stringify(value), ttlSeconds);
+}
+
+export async function cacheFlushPattern(pattern: string): Promise<void> {
+  for (const key of memoryCache.keys()) {
+    if (key.includes(pattern)) memoryCache.delete(key);
+  }
 }

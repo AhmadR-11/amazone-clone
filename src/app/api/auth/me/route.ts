@@ -44,9 +44,11 @@ export async function GET() {
       isGuest: false,
       sessionTimeRemaining: getSessionTimeRemaining(session),
       user: {
+        id: session.userId,
         userId: session.userId,
         name: session.name,
         email: session.email,
+        role: session.role || 'user',
       },
     });
   } catch (error: any) {

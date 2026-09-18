@@ -43,12 +43,14 @@ export async function POST(request: Request) {
       userId: user._id.toString(),
       email: user.email,
       name: user.name,
+      role: (user as any).role || 'user',
     });
 
     const refreshToken = signRefreshToken({
       userId: user._id.toString(),
       email: user.email,
       name: user.name,
+      role: (user as any).role || 'user',
     });
 
     // Store hashed refresh token

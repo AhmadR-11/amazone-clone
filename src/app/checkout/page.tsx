@@ -63,25 +63,40 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
+      const paymentPayload = {
+        type: paymentMethod === 'amazon_pay' ? 'card' : paymentMethod,
+        last4: paymentMethod === 'card' ? cardDetails.cardNumber.slice(-4) : undefined,
+        brand: paymentMethod === 'card' ? 'Visa' : undefined,
+      };
+
+      const shippingPayload = {
+        fullName: address.fullName,
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        postalCode: address.zipCode,
+        country: address.country,
+        phone: address.phone,
+      };
+
       const res = await fetch('/api/orders/place', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          shippingAddress: address,
-          paymentMethod,
+          shippingAddress: shippingPayload,
+          paymentMethod: paymentPayload,
           items,
-          totalAmount: total,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to place order');
+        throw new Error(data.message || data.error || 'Failed to place order');
       }
 
-      toast.success('Order placed successfully!');
+      toast.success('Order placed successfully! 🎉');
       clearCart();
-      router.push(`/orders/${data.orderId || data.order?._id || 'recent'}`);
+      router.push(`/orders/${data.orderId || data.order?._id}`);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || 'Error placing order');
@@ -89,6 +104,7 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
     }
   };
+
 
   if (items.length === 0) {
     return (

@@ -66,7 +66,7 @@ export default function CartDrawer() {
             <h2 className="text-lg font-bold">
               Shopping Cart
               {totalItems() > 0 && (
-                <span className="ml-2 text-sm text-amazon-yellow">
+                <span suppressHydrationWarning className="ml-2 text-sm text-amazon-yellow">
                   ({totalItems()} {totalItems() === 1 ? 'item' : 'items'})
                 </span>
               )}

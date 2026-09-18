@@ -10,6 +10,7 @@ export interface UserSession {
   userId: string;
   email: string;
   name: string;
+  role?: 'user' | 'admin';
   isGuest?: boolean;
   sessionKey?: string;
   exp?: number;
@@ -21,6 +22,7 @@ export function signToken(payload: {
   userId: string;
   email: string;
   name: string;
+  role?: 'user' | 'admin';
   isGuest?: boolean;
 }): string {
   return jwt.sign(payload, ACCESS_SECRET, { expiresIn: '15m' });
@@ -33,6 +35,7 @@ export function verifyToken(token: string): UserSession | null {
       userId: decoded.userId,
       email: decoded.email,
       name: decoded.name,
+      role: decoded.role || 'user',
       isGuest: decoded.isGuest || false,
       sessionKey: token,
       exp: decoded.exp,
@@ -43,13 +46,14 @@ export function verifyToken(token: string): UserSession | null {
   }
 }
 
-// ─── Refresh Token (30d) ────────────────────────────────────────────────
+// ─── Refresh Token (7d) ─────────────────────────────────────────────────
 export function signRefreshToken(payload: {
   userId: string;
   email: string;
   name: string;
+  role?: 'user' | 'admin';
 }): string {
-  return jwt.sign(payload, REFRESH_SECRET, { expiresIn: '30d' });
+  return jwt.sign(payload, REFRESH_SECRET, { expiresIn: '7d' });
 }
 
 export function verifyRefreshToken(token: string): UserSession | null {
@@ -59,6 +63,7 @@ export function verifyRefreshToken(token: string): UserSession | null {
       userId: decoded.userId,
       email: decoded.email,
       name: decoded.name,
+      role: decoded.role || 'user',
       isGuest: false,
     };
   } catch {
@@ -122,7 +127,7 @@ export function createGuestSessionToken(): {
 // ─── Session Time Helpers ────────────────────────────────────────────────
 export function getSessionTimeRemaining(session: UserSession): string {
   const now = Math.floor(Date.now() / 1000);
-  const exp = session.exp || now + 30 * 24 * 3600;
+  const exp = session.exp || now + 7 * 24 * 3600;
   const remaining = Math.max(0, exp - now);
   const days = Math.floor(remaining / 86400);
   const hours = Math.floor((remaining % 86400) / 3600);

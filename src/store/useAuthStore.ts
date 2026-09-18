@@ -5,8 +5,10 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface AuthUser {
   userId: string;
+  id?: string;
   name: string;
   email: string;
+  role?: 'user' | 'admin';
   isGuest?: boolean;
   sessionTimeRemaining?: string;
 }
@@ -43,9 +45,11 @@ export const useAuthStore = create<AuthStore>()(
           if (data.user && !data.isGuest) {
             set({
               user: {
-                userId: data.user.userId,
+                id: data.user.id || data.user.userId,
+                userId: data.user.userId || data.user.id,
                 name: data.user.name,
                 email: data.user.email,
+                role: data.user.role || 'user',
                 isGuest: false,
                 sessionTimeRemaining: data.sessionTimeRemaining,
               },

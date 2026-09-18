@@ -3,11 +3,14 @@
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useAuthStore } from '@/store/useAuthStore';
+
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/';
+  const redirectUrl = searchParams.get('returnUrl') || searchParams.get('redirect') || '/';
+  const { fetchSession } = useAuthStore();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,8 +31,10 @@ function LoginForm() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Failed to sign in');
+        setError(data.message || data.error || 'Invalid email or password');
       } else {
+        // Sync auth store from new cookie before navigating
+        await fetchSession();
         router.push(redirectUrl);
         router.refresh();
       }
