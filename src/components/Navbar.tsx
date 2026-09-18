@@ -116,14 +116,14 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Main Navbar */}
-      <nav className="bg-amazon-dark text-white shadow-md">
+      {/* Main Navbar (Dark Navy #131921) */}
+      <nav className="bg-[#131921] text-white shadow-md">
         <div className="flex items-center justify-between gap-2 md:gap-4 px-3 md:px-6 py-2">
           
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 text-white flex items-center gap-1 group">
-            <div className="text-xl md:text-2xl font-black tracking-tight flex items-center">
-              amazon<span className="text-amazon_orange">.clone</span>
+            <div className="text-xl md:text-2xl font-black tracking-tight flex items-center text-white">
+              amazon<span className="text-[#ff9900]">.clone</span>
             </div>
           </Link>
 
@@ -136,13 +136,13 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div ref={searchRef} className="flex-1 relative flex items-stretch rounded-md overflow-hidden max-w-3xl">
-            {/* Category Select */}
+          {/* Search Bar Container */}
+          <div ref={searchRef} className="flex-1 relative flex items-stretch rounded-md overflow-hidden max-w-3xl shadow-sm">
+            {/* Category Dropdown Select */}
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold px-3 py-2 border-r border-gray-300 cursor-pointer focus:outline-none hidden sm:block"
+              className="bg-[#f3f3f3] hover:bg-[#e6e6e6] text-gray-900 text-xs font-semibold px-3 py-2 border-r border-gray-300 cursor-pointer focus:outline-none hidden sm:block"
               aria-label="Search category"
             >
               {CATEGORIES.map((c) => (
@@ -158,16 +158,16 @@ export default function Navbar() {
                 onChange={handleQueryChange}
                 onFocus={() => query && setShowSuggestions(true)}
                 placeholder="Search Amazon.clone"
-                className="flex-1 text-gray-900 px-4 py-2 text-sm focus:outline-none"
+                className="flex-1 text-gray-900 bg-white px-4 py-2 text-sm focus:outline-none"
                 aria-label="Search products"
                 autoComplete="off"
               />
               <button
                 type="submit"
-                className="bg-amazon_yellow hover:bg-amazon_yellow_hover text-amazon_blue px-4 flex items-center justify-center transition"
+                className="bg-[#febd69] hover:bg-[#f3a847] text-[#111111] px-4 flex items-center justify-center transition border-l border-amber-300"
                 aria-label="Submit search"
               >
-                <Search size={18} className="text-amazon_blue font-bold" />
+                <Search size={20} className="text-[#111111] font-bold" />
               </button>
             </form>
 
@@ -188,7 +188,7 @@ export default function Navbar() {
                   <button
                     key={s.asin}
                     onClick={() => handleSuggestionClick(s)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-amber-50/60 transition text-left text-xs"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-amber-50/70 transition text-left text-xs"
                   >
                     <img
                       src={s.image}
@@ -209,7 +209,7 @@ export default function Navbar() {
                 {suggestions.length > 0 && (
                   <button
                     onClick={handleSearch}
-                    className="w-full px-4 py-2.5 text-xs text-amazon_blue hover:bg-gray-50 border-t border-gray-100 text-center font-bold"
+                    className="w-full px-4 py-2.5 text-xs text-[#007185] hover:bg-gray-50 border-t border-gray-100 text-center font-bold"
                   >
                     See all results for "{query}"
                   </button>
@@ -221,7 +221,7 @@ export default function Navbar() {
           {/* Account Menu & Direct Links */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
 
-            {/* Account Dropdown */}
+            {/* Account Dropdown Button */}
             <div className="relative">
               <button
                 onClick={() => setShowAccountMenu(!showAccountMenu)}
@@ -249,7 +249,7 @@ export default function Navbar() {
                         <Link
                           href="/profile"
                           onClick={() => setShowAccountMenu(false)}
-                          className="block w-full text-center bg-amazon_yellow hover:bg-amazon_yellow_hover text-amazon_blue font-bold text-xs py-2 rounded shadow-sm"
+                          className="block w-full text-center bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 font-bold text-xs py-2 rounded shadow-sm"
                         >
                           Manage Account
                         </Link>
@@ -259,13 +259,13 @@ export default function Navbar() {
                         <Link
                           href="/auth/login"
                           onClick={() => setShowAccountMenu(false)}
-                          className="block w-full text-center bg-amazon_yellow hover:bg-amazon_yellow_hover text-amazon_blue font-bold text-xs py-2 rounded shadow-sm mb-2"
+                          className="block w-full text-center bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 font-bold text-xs py-2 rounded shadow-sm mb-2"
                         >
                           Sign in
                         </Link>
                         <span className="text-[11px] text-gray-500">
                           New customer?{' '}
-                          <Link href="/auth/register" onClick={() => setShowAccountMenu(false)} className="text-amazon_blue font-bold underline">
+                          <Link href="/auth/register" onClick={() => setShowAccountMenu(false)} className="text-[#007185] font-bold underline">
                             Start here.
                           </Link>
                         </span>
@@ -274,7 +274,7 @@ export default function Navbar() {
                   </div>
 
                   <div className="p-3 text-xs space-y-2">
-                    <div className="font-bold text-gray-900 uppercase tracking-wider text-[10px] text-gray-500">
+                    <div className="font-bold uppercase tracking-wider text-[10px] text-gray-500">
                       Your Account
                     </div>
                     <Link
@@ -282,14 +282,14 @@ export default function Navbar() {
                       onClick={() => setShowAccountMenu(false)}
                       className="flex items-center gap-2 py-1.5 px-2 hover:bg-amber-50 rounded text-gray-700 font-medium"
                     >
-                      <User size={14} className="text-amazon_blue" /> Your Profile & Addresses
+                      <User size={14} className="text-[#007185]" /> Your Profile & Addresses
                     </Link>
                     <Link
                       href="/orders"
                       onClick={() => setShowAccountMenu(false)}
                       className="flex items-center gap-2 py-1.5 px-2 hover:bg-amber-50 rounded text-gray-700 font-medium"
                     >
-                      <Package size={14} className="text-amazon_orange" /> Your Orders & Tracking
+                      <Package size={14} className="text-[#ffa41c]" /> Your Orders & Tracking
                     </Link>
 
                     {user && (
@@ -323,12 +323,12 @@ export default function Navbar() {
               <div className="relative">
                 <ShoppingCart size={28} className="text-white" />
                 <span
-                  className="absolute -top-1 left-2.5 min-w-[18px] h-[18px] bg-amazon_orange text-amazon_blue text-[11px] font-black rounded-full flex items-center justify-center px-1"
+                  className="absolute -top-1.5 left-2.5 min-w-[20px] h-[20px] bg-[#f08804] text-[#111111] text-[11px] font-black rounded-full flex items-center justify-center px-1 shadow-sm"
                 >
                   {cartCount}
                 </span>
               </div>
-              <span className="text-xs font-extrabold pb-0.5 hidden md:block">Cart</span>
+              <span className="text-xs font-extrabold pb-0.5 hidden md:block text-white">Cart</span>
             </button>
 
           </div>
