@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectToDatabase } from '@/lib/db';
 import User from '@/lib/models/User';
-import { signToken, signRefreshToken } from '@/lib/auth';
+import EmailOtp from '@/lib/models/EmailOtp';
 import { RegisterSchema } from '@/lib/validators';
+import { validateEmailExistence } from '@/lib/emailExistence';
+import { sendVerificationOtpEmail } from '@/lib/mailer';
 
 export async function POST(request: Request) {
   try {
@@ -18,10 +20,21 @@ export async function POST(request: Request) {
     }
 
     const { name, email, password } = parsed.data;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // 1. Verify that email domain actually exists and can receive emails (DNS MX record check)
+    const emailValidation = await validateEmailExistence(normalizedEmail);
+    if (!emailValidation.isValid) {
+      return NextResponse.json(
+        { success: false, message: emailValidation.error || 'Invalid or non-existent email address' },
+        { status: 400 }
+      );
+    }
 
     await connectToDatabase();
 
-    const existing = await User.findOne({ email: email.toLowerCase() });
+    // 2. Check if user already exists
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
       return NextResponse.json(
         { success: false, message: 'An account with this email already exists' },
@@ -29,63 +42,59 @@ export async function POST(request: Request) {
       );
     }
 
+    // 3. Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const user = await User.create({
-      name: name.trim(),
-      email: email.toLowerCase(),
-      passwordHash,
-      addresses: [],
-      searchHistory: [],
-      viewHistory: [],
-    });
+    // 4. Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const accessToken = signToken({
-      userId: user._id.toString(),
-      email: user.email,
-      name: user.name,
-    });
-
-    const refreshToken = signRefreshToken({
-      userId: user._id.toString(),
-      email: user.email,
-      name: user.name,
-    });
-
-    user.refreshToken = refreshToken;
-    await user.save();
-
-    const response = NextResponse.json(
+    // 5. Store pending registration data with OTP in MongoDB (auto-expires in 10 minutes)
+    await EmailOtp.findOneAndUpdate(
+      { email: normalizedEmail },
       {
-        success: true,
-        user: { id: user._id, name: user.name, email: user.email },
+        email: normalizedEmail,
+        name: name.trim(),
+        passwordHash,
+        otp,
+        attempts: 0,
+        lastSentAt: new Date(),
+        createdAt: new Date(),
       },
-      { status: 201 }
+      { upsert: true, new: true }
     );
 
-    response.cookies.set('token', accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 15,
+    // 6. Send OTP verification email to user's real email inbox
+    const mailResult = await sendVerificationOtpEmail({
+      to: normalizedEmail,
+      name: name.trim(),
+      otp,
     });
 
-    response.cookies.set('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-    });
+    if (!mailResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: mailResult.error || 'Failed to send verification email. Please check your email address.',
+        },
+        { status: 500 }
+      );
+    }
 
-    response.cookies.delete('guest_session_token');
-
-    return response;
+    return NextResponse.json(
+      {
+        success: true,
+        requireOtp: true,
+        email: normalizedEmail,
+        message: 'Verification code sent to your email address.',
+        devMode: mailResult.devMode,
+        previewOtp: mailResult.devMode ? mailResult.previewOtp : undefined,
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error('Register error:', error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: error?.message || 'Internal server error' },
       { status: 500 }
     );
   }

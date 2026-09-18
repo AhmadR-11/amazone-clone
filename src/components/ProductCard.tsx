@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 
 interface Product {
   asin: string;
@@ -28,6 +29,7 @@ interface Props {
 export default function ProductCard({ product, compact = false }: Props) {
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
+  const { isInWishlist, toggleWishlist } = useWishlistStore();
 
   const discount =
     product.originalPrice && product.originalPrice > product.price
@@ -46,6 +48,18 @@ export default function ProductCard({ product, compact = false }: Props) {
       price: product.price,
     });
     openCart();
+  };
+
+  const handleToggleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await toggleWishlist({
+      asin: product.asin,
+      title: product.title,
+      image: product.image,
+      price: product.price,
+      category: product.category,
+    });
   };
 
   const stars = Array.from({ length: 5 }, (_, i) => {
@@ -81,9 +95,26 @@ export default function ProductCard({ product, compact = false }: Props) {
             loading="lazy"
           />
           {discount && (
-            <div className="absolute top-1 right-1 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">
+            <div className="absolute top-1 left-1 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">
               -{discount}%
             </div>
+          )}
+          {/* Wishlist Heart Button */}
+          {!compact && (
+            <button
+              onClick={handleToggleWishlist}
+              title={isInWishlist(product.asin) ? 'Remove from Wish List' : 'Add to Wish List'}
+              className={`absolute top-1 right-1 p-1.5 rounded-full shadow transition-all duration-200 opacity-0 group-hover:opacity-100 ${
+                isInWishlist(product.asin)
+                  ? 'bg-red-50 text-red-500 opacity-100'
+                  : 'bg-white/90 text-gray-400 hover:text-red-500'
+              }`}
+            >
+              <Heart
+                size={15}
+                className={isInWishlist(product.asin) ? 'fill-red-500 text-red-500' : ''}
+              />
+            </button>
           )}
         </div>
 

@@ -1460,25 +1460,151 @@ button {
   background: var(--amazon-yellow-hover);
 }
 
-/* Responsive Breakpoints */
-@media (max-width: 900px) {
-  .cart-page-layout,
-  .catalog-layout {
+/* Responsive Breakpoints & Device Optimizations */
+
+/* Scrollbar Utility for Horizontal Carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (max-width: 1024px) {
+  .category-tiles-grid {
+    margin: -40px auto 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .product-detail-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-carousel-container {
+    padding: 16px 12px 28px;
+    min-height: 260px;
+    max-height: 380px;
+  }
+
+  .carousel-nav-btn {
+    width: 32px;
+    height: 54px;
+    font-size: 18px;
   }
 
   .hero-slide-content {
     flex-direction: column;
     text-align: center;
+    gap: 12px;
+  }
+
+  .hero-text-content {
+    max-width: 100%;
+  }
+
+  .hero-title {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .hero-price-tag {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .hero-shop-btn {
+    font-size: 12px;
+    padding: 6px 16px;
   }
 
   .hero-image-box {
     width: 100%;
-    height: 180px;
+    max-width: 260px;
+    height: 140px;
   }
 
-  .hero-title {
-    font-size: 26px;
+  .category-tiles-grid {
+    margin: 16px auto 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    padding: 0 12px;
+    gap: 16px;
+  }
+
+  .cart-page-layout,
+  .catalog-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-cols {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 24px 16px;
+  }
+
+  .footer-mid {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 12px;
+  }
+
+  .bottom-links {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
+
+@media (max-width: 480px) {
+  .category-tiles-grid {
+    grid-template-columns: 1fr;
+    padding: 0 8px;
+  }
+
+  .tile-card {
+    padding: 14px;
+  }
+
+  .tile-card h2 {
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+
+  .tile-quad-grid {
+    gap: 8px;
+  }
+
+  .quad-item img {
+    height: 90px;
+  }
+
+  .footer-cols {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .footer-col a {
+    margin-bottom: 6px;
+  }
+
+  .bottom-links {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .legal-nav a {
+    display: inline-block;
+    margin: 4px 8px;
+  }
+}
+
 

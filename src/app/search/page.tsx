@@ -8,8 +8,8 @@ import { Search, Filter, AlertCircle } from 'lucide-react';
 
 function SearchResultsContent() {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
-  const category = searchParams.get('category') || '';
+  const query = searchParams?.get('q') || '';
+  const category = searchParams?.get('category') || '';
 
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

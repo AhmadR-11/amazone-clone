@@ -37,6 +37,7 @@ export interface IUser extends Document {
   addresses: IAddress[];
   searchHistory: ISearchHistoryItem[];
   viewHistory: IViewHistoryItem[];
+  isEmailVerified?: boolean;
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -88,6 +89,7 @@ const UserSchema: Schema<IUser> = new Schema(
         viewedAt: { type: Date, default: Date.now },
       },
     ],
+    isEmailVerified: { type: Boolean, default: false },
     refreshToken: { type: String },
   },
   { timestamps: true }

@@ -4,75 +4,49 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Heart, ShoppingCart, Trash2, Tag, ArrowRight, Package } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { useCartStore } from '@/store/useCartStore';
-
-interface WishlistItem {
-  _id: string;
-  asin: string;
-  title: string;
-  imageUrl: string;
-  price: number;
-  category: string;
-  addedAt: string;
-}
+import { useWishlistStore } from '@/store/useWishlistStore';
 
 export default function WishlistPage() {
   const router = useRouter();
   const { addItem } = useCartStore();
-  const [items, setItems] = useState<WishlistItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { items, fetchWishlist, removeFromWishlist } = useWishlistStore();
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
+    const checkAuth = async () => {
       try {
         const authRes = await fetch('/api/auth/me');
         if (!authRes.ok) {
           router.push('/auth/login?returnUrl=/wishlist');
           return;
         }
-        setIsLoggedIn(true);
-        const res = await fetch('/api/wishlist');
-        if (res.ok) {
-          const data = await res.json();
-          setItems(data.items || []);
-        }
+        await fetchWishlist();
       } catch {
-        toast.error('Failed to load wishlist');
+        // stay on page
       } finally {
-        setLoading(false);
+        setPageLoading(false);
       }
     };
-    load();
-  }, [router]);
+    checkAuth();
+  }, [router, fetchWishlist]);
 
   const removeItem = async (asin: string) => {
-    try {
-      const res = await fetch(`/api/wishlist/remove/${asin}`, { method: 'DELETE' });
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data.items || []);
-        toast.success('Removed from wishlist');
-      }
-    } catch {
-      toast.error('Failed to remove item');
-    }
+    await removeFromWishlist(asin);
   };
 
-  const moveToCart = async (item: WishlistItem) => {
+  const moveToCart = async (item: typeof items[0]) => {
     addItem({
       asin: item.asin,
       title: item.title,
-      image: item.imageUrl,
+      image: item.imageUrl || '',
       price: item.price,
       quantity: 1,
     });
-    toast.success('Added to cart!');
-    await removeItem(item.asin);
+    await removeFromWishlist(item.asin);
   };
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="min-h-[70vh] bg-amazon_bg flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">

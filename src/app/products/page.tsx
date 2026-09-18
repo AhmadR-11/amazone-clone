@@ -31,7 +31,7 @@ function ProductsContent() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [priceRange, setPriceRange] = useState([0, 2000]);
   const [minRating, setMinRating] = useState(0);
-  const searchQuery = searchParams.get('q') || '';
+  const searchQuery = searchParams?.get('q') || '';
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -124,24 +124,43 @@ function ProductsContent() {
           </div>
         </div>
 
-        <div className="flex gap-6">
+        <div className="flex gap-6 relative">
+          {/* Mobile Filter Backdrop */}
+          {showFilters && (
+            <div
+              className="fixed inset-0 bg-black/60 z-40 sm:hidden backdrop-blur-xs"
+              onClick={() => setShowFilters(false)}
+            />
+          )}
+
           {/* Sidebar Filters */}
           <aside
             className={`${
-              showFilters ? 'block' : 'hidden'
-            } sm:block w-full sm:w-56 flex-shrink-0`}
+              showFilters
+                ? 'fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white p-4 shadow-2xl overflow-y-auto block'
+                : 'hidden sm:block w-full sm:w-56 flex-shrink-0'
+            }`}
           >
-            <div className="bg-white rounded-md shadow-sm p-4 sticky top-20">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold text-gray-900 text-sm">Filters</h2>
-                {hasFilters && (
+            <div className="bg-white rounded-md p-2 sm:p-0 sticky top-20">
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-200">
+                <h2 className="font-bold text-gray-900 text-base">Filters</h2>
+                <div className="flex items-center gap-3">
+                  {hasFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-xs text-amazon-teal hover:underline flex items-center gap-1 font-semibold"
+                    >
+                      <X size={12} /> Clear all
+                    </button>
+                  )}
                   <button
-                    onClick={clearFilters}
-                    className="text-xs text-amazon-teal hover:underline flex items-center gap-1"
+                    onClick={() => setShowFilters(false)}
+                    className="sm:hidden p-1 text-gray-500 hover:bg-gray-100 rounded"
+                    aria-label="Close filters"
                   >
-                    <X size={10} /> Clear all
+                    <X size={20} />
                   </button>
-                )}
+                </div>
               </div>
 
               {/* Category Filter */}

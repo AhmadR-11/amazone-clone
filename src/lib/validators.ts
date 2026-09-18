@@ -6,8 +6,17 @@ export const RegisterSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
+    .min(6, 'Password must be at least 6 characters')
     .max(100),
+});
+
+export const VerifyOtpSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  otp: z.string().trim().length(6, 'Verification code must be 6 digits'),
+});
+
+export const ResendOtpSchema = z.object({
+  email: z.string().email('Invalid email address'),
 });
 
 export const LoginSchema = z.object({
@@ -96,6 +105,8 @@ export const ChangePasswordSchema = z
 
 // ─── Types ────────────────────────────────────────────────────────────────
 export type RegisterInput = z.infer<typeof RegisterSchema>;
+export type VerifyOtpInput = z.infer<typeof VerifyOtpSchema>;
+export type ResendOtpInput = z.infer<typeof ResendOtpSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
 export type AddressInput = z.infer<typeof AddressSchema>;
 export type CartItemInput = z.infer<typeof CartItemSchema>;

@@ -10,7 +10,7 @@ export default function SubNav() {
   return (
     <>
       {/* Secondary Amazon SubNav Bar (Dark Slate Navy #232f3e) */}
-      <nav className="bg-[#232f3e] text-white text-xs font-semibold py-1.5 px-4 flex items-center gap-4 overflow-x-auto border-t border-gray-700/60 shadow-md">
+      <nav className="bg-[#232f3e] text-white text-xs font-semibold py-1.5 px-3 md:px-4 flex items-center gap-2 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth border-t border-gray-700/60 shadow-md whitespace-nowrap">
         {/* All Hamburger Menu Trigger */}
         <button
           onClick={() => setMobileMenuOpen(true)}

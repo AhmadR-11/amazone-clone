@@ -71,7 +71,7 @@ export default function ProductCarousel({ title, products, categoryLink }: Produ
         {/* Products Row Container */}
         <div
           ref={rowRef}
-          className="flex items-stretch gap-4 overflow-x-auto scrollbar-none py-2 scroll-smooth"
+          className="flex items-stretch gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory py-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {products.map((item, idx) => {
@@ -82,7 +82,7 @@ export default function ProductCarousel({ title, products, categoryLink }: Produ
               <Link
                 key={id + idx}
                 href={`/product/${id}`}
-                className="w-48 sm:w-56 flex-shrink-0 bg-white rounded-md p-3 border border-transparent hover:border-gray-200 hover:shadow-md transition flex flex-col justify-between group/card cursor-pointer"
+                className="w-40 sm:w-56 snap-start flex-shrink-0 bg-white rounded-md p-3 border border-transparent hover:border-gray-200 hover:shadow-md transition flex flex-col justify-between group/card cursor-pointer"
               >
                 <div className="w-full h-44 mb-3 flex items-center justify-center p-2 bg-gray-50 rounded overflow-hidden">
                   <img

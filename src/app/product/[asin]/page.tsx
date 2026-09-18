@@ -15,10 +15,11 @@ import {
   Heart,
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useWishlistStore } from '@/store/useWishlistStore';
 
 export default function ProductDetailPage() {
   const params = useParams();
-  const asin = params.asin as string;
+  const asin = (params?.asin as string) || '';
   const router = useRouter();
 
   const [product, setProduct] = useState<any>(null);
@@ -29,8 +30,10 @@ export default function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
 
   const { addItem, openCart } = useCartStore();
+  const { isInWishlist, toggleWishlist, fetchWishlist } = useWishlistStore();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -72,6 +75,11 @@ export default function ProductDetailPage() {
     if (asin) fetchProduct();
   }, [asin, router]);
 
+  // Fetch wishlist state on mount so heart button reflects current state
+  useEffect(() => {
+    fetchWishlist();
+  }, [fetchWishlist]);
+
   const handleAddToCart = () => {
     if (!product) return;
     addItem(
@@ -93,6 +101,22 @@ export default function ProductDetailPage() {
   const handleBuyNow = () => {
     handleAddToCart();
     router.push('/checkout');
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!product || wishlistLoading) return;
+    setWishlistLoading(true);
+    const result = await toggleWishlist({
+      asin: product.asin,
+      title: product.title,
+      image: product.image,
+      price: product.price,
+      category: product.category,
+    });
+    if (result.requiresAuth) {
+      router.push(`/auth/login?returnUrl=/product/${product.asin}`);
+    }
+    setWishlistLoading(false);
   };
 
   if (loading) {
@@ -141,12 +165,30 @@ export default function ProductDetailPage() {
           <div className="lg:w-2/5">
             <div className="sticky top-20">
               {/* Main Image */}
-              <div className="relative bg-gray-50 rounded-md overflow-hidden mb-3 flex items-center justify-center h-96">
+              <div className="relative bg-gray-50 rounded-md overflow-hidden mb-3 flex items-center justify-center h-64 sm:h-96 p-2">
                 <img
                   src={images[activeImage]}
                   alt={product.title}
                   className="max-h-full max-w-full object-contain"
                 />
+                {/* Floating Wishlist Heart Button */}
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={wishlistLoading}
+                  title={isInWishlist(product.asin) ? 'Remove from Wish List' : 'Add to Wish List'}
+                  className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition-all duration-200 disabled:opacity-60 ${
+                    isInWishlist(product.asin)
+                      ? 'bg-red-50 hover:bg-red-100 text-red-500'
+                      : 'bg-white/90 hover:bg-white text-gray-400 hover:text-red-500'
+                  }`}
+                >
+                  <Heart
+                    size={22}
+                    className={`transition-all duration-200 ${
+                      isInWishlist(product.asin) ? 'fill-red-500 text-red-500' : ''
+                    }`}
+                  />
+                </button>
                 {images.length > 1 && (
                   <>
                     <button
@@ -322,37 +364,56 @@ export default function ProductDetailPage() {
             </div>
 
             {/* CTAs */}
-            {product.inStock && (
-              <div className="flex flex-col gap-3 max-w-sm">
-                <button
-                  onClick={handleAddToCart}
-                  className={`w-full py-2.5 rounded-full font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                    addedToCart
-                      ? 'bg-green-500 text-white'
-                      : 'bg-amazon-yellow hover:bg-amazon-yellow-hover text-amazon-dark'
-                  }`}
-                >
-                  {addedToCart ? (
-                    <>
-                      <Check size={16} /> Added to Cart!
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart size={16} /> Add to Cart
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handleBuyNow}
-                  className="w-full py-2.5 rounded-full font-bold text-sm bg-amazon-orange hover:bg-orange-400 text-amazon-dark transition-colors"
-                >
-                  Buy Now
-                </button>
-              </div>
-            )}
+            <div className="flex flex-col gap-3 w-full max-w-md">
+              {product.inStock && (
+                <>
+                  <button
+                    onClick={handleAddToCart}
+                    className={`w-full py-3 rounded-full font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
+                      addedToCart
+                        ? 'bg-green-500 text-white'
+                        : 'bg-amazon-yellow hover:bg-amazon-yellow-hover text-amazon-dark'
+                    }`}
+                  >
+                    {addedToCart ? (
+                      <>
+                        <Check size={16} /> Added to Cart!
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart size={16} /> Add to Cart
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    className="w-full py-3 rounded-full font-bold text-sm bg-amazon-orange hover:bg-orange-400 text-amazon-dark transition-colors shadow-sm"
+                  >
+                    Buy Now
+                  </button>
+                </>
+              )}
+
+              {/* Add to Wish List — always visible */}
+              <button
+                onClick={handleToggleWishlist}
+                disabled={wishlistLoading}
+                className={`w-full py-2.5 rounded-full font-semibold text-sm border transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
+                  isInWishlist(product.asin)
+                    ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                    : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:text-red-500 hover:bg-red-50'
+                }`}
+              >
+                <Heart
+                  size={16}
+                  className={isInWishlist(product.asin) ? 'fill-red-500 text-red-500' : ''}
+                />
+                {isInWishlist(product.asin) ? 'Remove from Wish List' : 'Add to Wish List'}
+              </button>
+            </div>
 
             {/* Trust Badges */}
-            <div className="mt-5 border border-gray-200 rounded-md p-4 space-y-2.5 max-w-sm text-sm">
+            <div className="mt-5 border border-gray-200 rounded-md p-4 space-y-2.5 w-full max-w-md text-sm bg-gray-50/50">
               <div className="flex items-start gap-3">
                 <Truck size={18} className="text-gray-600 mt-0.5 flex-shrink-0" />
                 <div>

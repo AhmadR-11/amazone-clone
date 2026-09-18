@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const orderId = params.id as string;
+  const orderId = (params?.id as string) || '';
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { addItem } = useCartStore();

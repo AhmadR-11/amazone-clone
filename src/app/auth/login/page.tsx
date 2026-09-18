@@ -9,7 +9,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('returnUrl') || searchParams.get('redirect') || '/';
+  const redirectUrl = searchParams?.get('returnUrl') || searchParams?.get('redirect') || '/';
   const { fetchSession } = useAuthStore();
 
   const [email, setEmail] = useState('');

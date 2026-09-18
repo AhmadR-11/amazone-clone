@@ -18,15 +18,36 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase();
 
-    const wishlist = await Wishlist.findOneAndUpdate(
-      { userId: session.userId },
-      {
-        $addToSet: {
-          items: { asin, title, imageUrl: imageUrl || '', price: price || 0, category: category || '', addedAt: new Date() },
-        },
-      },
-      { upsert: true, new: true }
-    );
+    let wishlist = await Wishlist.findOne({ userId: session.userId });
+    if (!wishlist) {
+      wishlist = new Wishlist({
+        userId: session.userId,
+        items: [
+          {
+            asin,
+            title,
+            imageUrl: imageUrl || '',
+            price: price || 0,
+            category: category || '',
+            addedAt: new Date(),
+          },
+        ],
+      });
+      await wishlist.save();
+    } else {
+      const exists = wishlist.items.some((item: any) => item.asin === asin);
+      if (!exists) {
+        wishlist.items.push({
+          asin,
+          title,
+          imageUrl: imageUrl || '',
+          price: price || 0,
+          category: category || '',
+          addedAt: new Date(),
+        });
+        await wishlist.save();
+      }
+    }
 
     return NextResponse.json({ success: true, items: wishlist.items });
   } catch (error: any) {
