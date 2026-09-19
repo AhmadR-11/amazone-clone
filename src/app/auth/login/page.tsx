@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
 
-
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -26,19 +25,18 @@ function LoginForm() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
       const data = await res.json();
       if (!res.ok) {
         setError(data.message || data.error || 'Invalid email or password');
       } else {
-        // Sync auth store from new cookie before navigating
         await fetchSession();
         router.push(redirectUrl);
         router.refresh();
       }
-    } catch (err) {
+    } catch (err: any) {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -50,16 +48,17 @@ function LoginForm() {
       <h1>Sign in</h1>
 
       {error && (
-        <div style={{ background: '#fff8f8', border: '1px solid #c00', color: '#c00', padding: '10px', borderRadius: '4px', fontSize: '13px', marginBottom: '14px' }}>
-          {error}
+        <div style={{ background: '#fff8f8', border: '1px solid #c00', color: '#c00', padding: '10px', borderRadius: '4px', fontSize: '13px', marginBottom: '14px', lineHeight: 1.4 }}>
+          ⚠️ {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>Email or mobile phone number</label>
+          <label>Email address</label>
           <input
             type="email"
+            placeholder="name@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -70,6 +69,7 @@ function LoginForm() {
           <label>Password</label>
           <input
             type="password"
+            placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -100,7 +100,9 @@ export default function LoginPage() {
   return (
     <div style={{ background: '#fff', minHeight: '100vh', padding: '20px 0' }}>
       <div className="auth-logo">
-        amazon<span style={{ color: '#ff9900' }}>.clone</span>
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          amazon<span style={{ color: '#ff9900' }}>.clone</span>
+        </Link>
       </div>
       <Suspense fallback={<div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>}>
         <LoginForm />
@@ -108,3 +110,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+

@@ -2,10 +2,8 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectToDatabase } from '@/lib/db';
 import User from '@/lib/models/User';
-import Cart from '@/lib/models/Cart';
 import { signToken, signRefreshToken } from '@/lib/auth';
 import { LoginSchema } from '@/lib/validators';
-import { ICartItem } from '@/lib/models/Cart';
 
 export async function POST(request: Request) {
   try {
@@ -20,10 +18,11 @@ export async function POST(request: Request) {
     }
 
     const { email, password } = parsed.data;
+    const normalizedEmail = email.trim().toLowerCase();
 
     await connectToDatabase();
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return NextResponse.json(
         { success: false, message: 'Invalid email or password' },
@@ -39,6 +38,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Sign JWT access and refresh tokens
     const accessToken = signToken({
       userId: user._id.toString(),
       email: user.email,
@@ -53,13 +53,13 @@ export async function POST(request: Request) {
       role: (user as any).role || 'user',
     });
 
-    // Store hashed refresh token
     user.refreshToken = refreshToken;
     await user.save();
 
     const response = NextResponse.json({
       success: true,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.name, email: user.email, role: (user as any).role || 'user' },
+      message: 'Logged in successfully',
     });
 
     // Access token (15m)
@@ -87,8 +87,10 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Login error:', error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: error?.message || 'Internal server error' },
       { status: 500 }
     );
   }
 }
+
+
