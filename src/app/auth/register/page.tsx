@@ -202,7 +202,7 @@ function RegisterForm() {
           </form>
 
           <p className="auth-legal">
-            By creating an account, you agree to Amazon's{' '}
+            By creating an account, you agree to Amazon&apos;s{' '}
             <a href="#" style={{ color: '#007185' }}>
               Conditions of Use
             </a>{' '}
@@ -236,7 +236,7 @@ function RegisterForm() {
           <h1 style={{ fontSize: '24px', marginBottom: '8px' }}>Verify email address</h1>
 
           <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#333', marginBottom: '16px' }}>
-            To verify your email, we've sent a One Time Password (OTP) to{' '}
+            To verify your email, we&apos;ve sent a One Time Password (OTP) to{' '}
             <strong>{email}</strong>{' '}
             <button
               type="button"
@@ -376,7 +376,7 @@ function RegisterForm() {
           </div>
 
           <p className="auth-legal" style={{ marginTop: '24px' }}>
-            By creating an account, you agree to Amazon's{' '}
+            By creating an account, you agree to Amazon&apos;s{' '}
             <a href="#" style={{ color: '#007185' }}>
               Conditions of Use
             </a>{' '}

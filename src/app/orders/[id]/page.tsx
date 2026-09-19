@@ -47,7 +47,7 @@ export default function OrderDetailPage() {
       <div className="min-h-[70vh] bg-amazon_bg flex items-center justify-center p-6">
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center max-w-md">
           <h2 className="text-xl font-bold text-gray-800 mb-2">Order Not Found</h2>
-          <p className="text-gray-500 text-sm mb-6">We couldn't locate details for this order ID.</p>
+          <p className="text-gray-500 text-sm mb-6">We couldn&apos;t locate details for this order ID.</p>
           <Link
             href="/orders"
             className="bg-amazon_yellow hover:bg-amazon_yellow_hover text-amazon_blue font-bold px-6 py-2.5 rounded-md inline-block text-sm"

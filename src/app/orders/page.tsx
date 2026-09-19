@@ -81,7 +81,7 @@ export default function OrdersPage() {
             <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-800 mb-2">No orders placed yet</h2>
             <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
-              Looks like you haven't made any orders yet. Discover items, electronics, and daily essentials on Amazon.
+              Looks like you haven&apos;t made any orders yet. Discover items, electronics, and daily essentials on Amazon.
             </p>
             <Link
               href="/products"

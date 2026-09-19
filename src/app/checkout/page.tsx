@@ -384,7 +384,7 @@ export default function CheckoutPage() {
                     )}
                   </button>
                   <p className="text-center text-xs text-gray-500 mt-2">
-                    By placing your order, you agree to Amazon's privacy notice and conditions of use.
+                    By placing your order, you agree to Amazon&apos;s privacy notice and conditions of use.
                   </p>
                 </div>
               </div>

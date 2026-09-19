@@ -38,7 +38,7 @@ export default function SubNav() {
             href="/products?sort=rating"
             className="hover:outline hover:outline-1 hover:outline-white px-2 py-1 rounded transition text-white"
           >
-            Today's Deals
+            Today&apos;s Deals
           </Link>
           <Link
             href="/products?category=Fashion"

@@ -30,7 +30,7 @@ export default function PersonalizedRecommendations() {
             href="/products"
             className="bg-amazon_yellow hover:bg-amazon_yellow_hover text-amazon_blue font-bold px-6 py-2 rounded-md text-sm transition inline-flex items-center gap-1.5 shadow-sm"
           >
-            Explore Today's Deals <ArrowRight className="w-4 h-4" />
+            Explore Today&apos;s Deals <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             href="/orders"

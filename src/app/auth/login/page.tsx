@@ -82,7 +82,7 @@ function LoginForm() {
       </form>
 
       <p className="auth-legal">
-        By continuing, you agree to Amazon's <a href="#" style={{ color: '#007185' }}>Conditions of Use</a> and <a href="#" style={{ color: '#007185' }}>Privacy Notice</a>.
+        By continuing, you agree to Amazon&apos;s <a href="#" style={{ color: '#007185' }}>Conditions of Use</a> and <a href="#" style={{ color: '#007185' }}>Privacy Notice</a>.
       </p>
 
       <div className="auth-divider">

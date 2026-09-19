@@ -47,7 +47,7 @@ function SearchResultsContent() {
         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
           <div>
             <span className="text-gray-500">Results for </span>
-            <span className="font-extrabold text-amazon_orange text-base md:text-lg">"{query || 'All Products'}"</span>
+            <span className="font-extrabold text-amazon_orange text-base md:text-lg">&quot;{query || 'All Products'}&quot;</span>
             {category && category !== 'All' && (
               <span className="text-gray-600 font-semibold"> in {category}</span>
             )}
@@ -63,7 +63,7 @@ function SearchResultsContent() {
         ) : products.length === 0 ? (
           <div className="bg-white rounded-lg border border-gray-200 p-12 text-center shadow-sm">
             <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h2 className="text-lg font-bold text-gray-800 mb-1">No results matching "{query}"</h2>
+            <h2 className="text-lg font-bold text-gray-800 mb-1">No results matching &quot;{query}&quot;</h2>
             <p className="text-xs text-gray-500 max-w-sm mx-auto">
               Check your spelling or try searching with more generic keywords.
             </p>
