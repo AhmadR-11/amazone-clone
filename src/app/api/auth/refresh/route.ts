@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { verifyRefreshToken, signToken, signRefreshToken } from '@/lib/auth';
 import { connectToDatabase } from '@/lib/db';

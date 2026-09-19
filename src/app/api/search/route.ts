@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { searchProducts, getAllCategories, SEED_PRODUCTS } from '@/lib/products';
 import { cacheGetJSON, cacheSetJSON } from '@/lib/cache';

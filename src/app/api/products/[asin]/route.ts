@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getProduct, getRelatedProducts } from '@/lib/products';
 import { getUserSessionFromCookies } from '@/lib/auth';
