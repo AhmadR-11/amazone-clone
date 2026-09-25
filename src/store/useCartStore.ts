@@ -58,6 +58,7 @@ export const useCartStore = create<CartStore>()(
           );
           if (existing) {
             return {
+              isOpen: true,
               items: state.items.map((i) =>
                 i.asin === item.asin &&
                 i.color === item.color &&
@@ -68,6 +69,7 @@ export const useCartStore = create<CartStore>()(
             };
           }
           return {
+            isOpen: true,
             items: [
               ...state.items,
               {

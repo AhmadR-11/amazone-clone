@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Search, ShoppingCart, ChevronDown, MapPin, Bell,
-  User, Package, LogOut, Heart, ShieldCheck, Tag
+  User, Package, LogOut, Heart, ShieldCheck, Sparkles, SlidersHorizontal
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -30,8 +30,6 @@ export default function Navbar() {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
-  // Prevents hydration mismatch — Zustand persists to localStorage,
-  // so server renders 0/null while client has real values.
   const [mounted, setMounted] = useState(false);
 
   const { totalItems, toggleCart } = useCartStore();
@@ -48,12 +46,10 @@ export default function Navbar() {
     fetchSession();
   }, [fetchSession]);
 
-  // Fetch wishlist when user is available
   useEffect(() => {
     if (user) fetchWishlist();
   }, [user, fetchWishlist]);
 
-  // Fetch unread notification count
   useEffect(() => {
     if (!user) return;
     fetch('/api/notifications')
@@ -62,7 +58,6 @@ export default function Navbar() {
       .catch(() => {});
   }, [user]);
 
-  // Debounced search autocomplete
   const fetchSuggestions = useCallback(async (q: string, cat: string) => {
     if (q.trim().length < 1) {
       setSuggestions([]);
@@ -111,7 +106,6 @@ export default function Navbar() {
     router.push(`/product/${s.asin}`);
   };
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -143,72 +137,85 @@ export default function Navbar() {
   const renderSearchForm = (isMobile = false) => (
     <div
       ref={isMobile ? searchRefMobile : searchRef}
-      className={`relative flex items-stretch rounded-md overflow-hidden shadow-sm ${
-        isMobile ? 'flex sm:hidden w-full mt-1 mb-1' : 'hidden sm:flex flex-1 max-w-3xl mx-2'
+      className={`relative flex items-center ${
+        isMobile ? 'flex sm:hidden w-full mt-2' : 'hidden sm:flex flex-1 max-w-2xl mx-4 lg:mx-6'
       }`}
     >
-      {!isMobile && (
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="bg-[#f3f3f3] hover:bg-[#e6e6e6] text-gray-900 text-xs font-semibold px-3 py-2 border-r border-gray-300 cursor-pointer focus:outline-none hidden md:block"
-          aria-label="Search category"
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-      )}
+      <div className="relative w-full flex items-center rounded-full liquid-glass-search border border-slate-200/90 shadow-inner transition-all duration-200 p-1">
+        {!isMobile && (
+          <div className="relative hidden md:flex items-center flex-shrink-0">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="bg-slate-200/50 hover:bg-slate-200/80 text-slate-800 text-xs font-bold pl-4 pr-7 py-2 rounded-l-full border-r border-slate-300/70 cursor-pointer focus:outline-none appearance-none transition-colors"
+              aria-label="Search category"
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c} className="bg-white text-slate-900 font-semibold">{c}</option>
+              ))}
+            </select>
+            <ChevronDown size={12} className="absolute right-2.5 text-slate-500 pointer-events-none" />
+          </div>
+        )}
 
-      <form onSubmit={handleSearch} className="flex flex-1">
-        <input
-          type="text"
-          value={query}
-          onChange={handleQueryChange}
-          onFocus={() => query && setShowSuggestions(true)}
-          placeholder="Search Amazon.clone"
-          className="flex-1 text-gray-900 bg-white px-3 sm:px-4 py-2 text-sm focus:outline-none w-full"
-          aria-label="Search products"
-          autoComplete="off"
-        />
-        <button
-          type="submit"
-          className="bg-[#febd69] hover:bg-[#f3a847] text-[#111111] px-4 flex items-center justify-center transition border-l border-amber-300 min-w-[44px]"
-          aria-label="Submit search"
-        >
-          <Search size={20} />
-        </button>
-      </form>
+        <form onSubmit={handleSearch} className="flex flex-1 items-center">
+          <input
+            type="text"
+            value={query}
+            onChange={handleQueryChange}
+            onFocus={() => query && setShowSuggestions(true)}
+            placeholder="Search products, brands and tech..."
+            className="flex-1 text-slate-900 font-medium bg-transparent px-4 py-1.5 text-xs sm:text-sm focus:outline-none placeholder:text-slate-400 placeholder:font-normal w-full"
+            aria-label="Search products"
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            className="bg-slate-950 hover:bg-blue-600 rounded-full p-2.5 text-white flex items-center justify-center shadow-sm hover:scale-105 transition-all duration-200 flex-shrink-0"
+            aria-label="Submit search"
+          >
+            <Search size={14} />
+          </button>
+        </form>
+      </div>
 
       {/* Autocomplete Dropdown */}
       {showSuggestions && (
-        <div className="absolute top-full left-0 right-0 bg-white text-gray-900 shadow-2xl rounded-b-md z-50 border border-gray-200 max-h-80 overflow-y-auto divide-y divide-gray-100">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white text-slate-900 shadow-2xl rounded-2xl z-50 border border-slate-200 max-h-80 overflow-y-auto divide-y divide-slate-100">
           {isSearching && (
-            <div className="px-4 py-3 text-xs text-gray-500 animate-pulse">Searching...</div>
+            <div className="px-4 py-3 text-xs text-blue-600 animate-pulse flex items-center gap-2">
+              <Sparkles size={14} /> Searching product catalog...
+            </div>
           )}
           {!isSearching && suggestions.length === 0 && query && (
-            <div className="px-4 py-3 text-xs text-gray-500">No suggestions for &quot;{query}&quot;</div>
+            <div className="px-4 py-3 text-xs text-slate-500">No matching results for &quot;{query}&quot;</div>
           )}
           {suggestions.map((s) => (
             <button
               key={s.asin}
               onClick={() => handleSuggestionClick(s)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-amber-50 transition text-left text-xs"
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left text-xs group"
             >
-              <img src={s.image} alt={s.title} className="w-8 h-8 object-contain flex-shrink-0 bg-gray-50 rounded" />
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 truncate">{s.title}</p>
-                <p className="text-[10px] text-gray-500">in {s.category}</p>
+              <div className="w-10 h-10 rounded-lg bg-slate-50 p-1 flex items-center justify-center border border-slate-200">
+                <img src={s.image} alt={s.title} className="w-full h-full object-contain" />
               </div>
-              {s.price && <span className="font-bold text-gray-900 flex-shrink-0">${s.price.toFixed(2)}</span>}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{s.title}</p>
+                <p className="text-[10px] text-slate-500">Category: {s.category}</p>
+              </div>
+              {s.price && (
+                <span className="font-bold text-slate-900 flex-shrink-0">
+                  ${s.price.toFixed(2)}
+                </span>
+              )}
             </button>
           ))}
           {suggestions.length > 0 && (
             <button
               onClick={handleSearch}
-              className="w-full px-4 py-2.5 text-xs text-[#007185] hover:bg-gray-50 border-t border-gray-100 text-center font-bold"
+              className="w-full px-4 py-3 text-xs text-blue-600 hover:bg-blue-50 text-center font-bold tracking-wide"
             >
-              See all results for &quot;{query}&quot;
+              Explore all results for &quot;{query}&quot; &rarr;
             </button>
           )}
         </div>
@@ -217,69 +224,74 @@ export default function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50">
-      {/* Main Navbar */}
-      <nav className="bg-[#131921] text-white shadow-md">
-        <div className="flex flex-col px-3 md:px-6 py-2">
-          <div className="flex items-center justify-between gap-2 md:gap-3">
+    <header className="sticky top-2 z-50 px-2 sm:px-4 lg:px-8 max-w-[1440px] mx-auto transition-all duration-300">
+      <nav className="liquid-glass-header rounded-[28px] sm:rounded-[32px] p-2.5 sm:p-3 transition-all duration-300">
+        <div className="flex items-center justify-between gap-2 md:gap-3 lg:gap-4">
 
-            {/* Logo */}
-            <Link href="/" className="flex-shrink-0">
-              <div className="text-xl md:text-2xl font-black tracking-tight text-white">
-                amazon<span className="text-[#ff9900]">.clone</span>
-              </div>
-            </Link>
-
-            {/* Deliver to */}
-            <div className="hidden lg:flex items-center gap-1.5 flex-shrink-0 hover:outline hover:outline-1 hover:outline-white px-2 py-1 rounded cursor-pointer">
-              <MapPin size={16} className="text-gray-300 mt-0.5" />
-              <div>
-                <p className="text-[11px] text-gray-400 font-medium leading-none">Deliver to</p>
-                <p className="text-xs font-extrabold text-white">United States</p>
-              </div>
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-slate-950 text-white flex items-center justify-center font-extrabold text-lg shadow-md group-hover:bg-blue-600 group-hover:scale-105 transition-all duration-300">
+              L
             </div>
+            <div className="flex flex-col">
+              <span className="text-lg sm:text-xl font-black tracking-tight text-slate-900 font-sans leading-none">
+                LUXE<span className="text-blue-600">STORE</span>
+              </span>
+              <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-slate-400 font-bold mt-0.5">Premium Retail</span>
+            </div>
+          </Link>
 
-            {/* Desktop Search Bar */}
-            {renderSearchForm(false)}
+          {/* Deliver to Location Badge */}
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full liquid-glass-pill text-xs transition-all duration-200 cursor-pointer">
+            <div className="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 flex-shrink-0">
+              <MapPin size={13} />
+            </div>
+            <div className="leading-tight">
+              <p className="text-[10px] text-slate-400 font-semibold">Deliver to</p>
+              <p className="font-extrabold text-slate-800 text-xs">Global Express</p>
+            </div>
+          </div>
 
-          {/* Right side actions */}
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+          {/* Desktop Search Bar */}
+          {renderSearchForm(false)}
 
-            {/* Account Dropdown */}
+          {/* Right Action Icons */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+
+            {/* User Account Menu */}
             <div ref={accountRef} className="relative">
               <button
                 onClick={() => setShowAccountMenu(!showAccountMenu)}
-                className="text-left hover:outline hover:outline-1 hover:outline-white px-2 py-1 rounded flex items-center gap-1 cursor-pointer"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full liquid-glass-pill text-xs font-bold text-slate-800 transition-all duration-200"
                 aria-label="Account menu"
               >
-                <div>
-                  <p className="text-[11px] text-gray-300 leading-none">
-                    Hello, {mounted ? (user?.name?.split(' ')[0] || 'Sign in') : 'Sign in'}
-                  </p>
-                  <p className="text-xs font-extrabold flex items-center gap-0.5 text-white">
-                    Account &amp; Lists <ChevronDown size={12} />
-                  </p>
+                <div className="w-7 h-7 rounded-full bg-slate-950 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                  {mounted && user?.name ? user.name[0].toUpperCase() : <User size={13} />}
                 </div>
+                <span className="hidden sm:inline-block max-w-[90px] truncate text-slate-800 font-bold">
+                  {mounted && user?.name ? user.name.split(' ')[0] : 'Sign In'}
+                </span>
+                <ChevronDown size={14} className="text-slate-400" />
               </button>
 
               {showAccountMenu && (
-                <div className="absolute top-full right-0 mt-1 w-64 bg-white text-gray-800 shadow-2xl rounded-md border border-gray-200 z-50 overflow-hidden">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200 text-center">
+                <div className="absolute top-full right-0 mt-3 w-64 bg-white/95 backdrop-blur-xl text-slate-900 shadow-2xl rounded-2xl z-50 overflow-hidden border border-slate-200/90 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-4 bg-slate-50/80 border-b border-slate-200/80 text-center">
                     {user ? (
                       <div>
-                        <p className="text-sm font-extrabold text-gray-900">{user.name}</p>
-                        <p className="text-xs text-gray-500 mb-3 truncate">{user.email}</p>
+                        <p className="text-sm font-bold text-slate-900">{user.name}</p>
+                        <p className="text-xs text-slate-500 mb-3 truncate">{user.email}</p>
                         {isAdmin && (
-                          <span className="inline-flex items-center gap-1 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold mb-2">
-                            <ShieldCheck size={11} /> Admin
+                          <span className="inline-flex items-center gap-1 text-[11px] bg-purple-50 text-purple-700 border border-purple-200 px-2.5 py-0.5 rounded-full font-semibold mb-2">
+                            <ShieldCheck size={12} /> Store Administrator
                           </span>
                         )}
                         <Link
                           href="/profile"
                           onClick={() => setShowAccountMenu(false)}
-                          className="block w-full text-center bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 font-bold text-xs py-2 rounded shadow-sm"
+                          className="block w-full text-center bg-slate-900 hover:bg-blue-600 text-white text-xs py-2 rounded-xl shadow-xs font-semibold transition-colors"
                         >
-                          Manage Account
+                          Account Dashboard
                         </Link>
                       </div>
                     ) : (
@@ -287,48 +299,47 @@ export default function Navbar() {
                         <Link
                           href="/auth/login"
                           onClick={() => setShowAccountMenu(false)}
-                          className="block w-full text-center bg-[#ffd814] hover:bg-[#f7ca00] text-gray-900 font-bold text-xs py-2 rounded shadow-sm mb-2"
+                          className="block w-full text-center bg-slate-900 hover:bg-blue-600 text-white text-xs py-2 rounded-xl shadow-xs font-semibold mb-2 transition-colors"
                         >
-                          Sign in
+                          Sign In to Account
                         </Link>
-                        <span className="text-[11px] text-gray-500">
-                          New customer?{' '}
-                          <Link href="/auth/register" onClick={() => setShowAccountMenu(false)} className="text-[#007185] font-bold underline">
-                            Start here.
+                        <span className="text-[11px] text-slate-500">
+                          New client?{' '}
+                          <Link href="/auth/register" onClick={() => setShowAccountMenu(false)} className="text-blue-600 font-bold hover:underline">
+                            Register now
                           </Link>
                         </span>
                       </div>
                     )}
                   </div>
 
-                  <div className="p-3 text-xs space-y-1">
-                    <div className="font-bold uppercase tracking-wider text-[10px] text-gray-500 mb-2">Your Account</div>
-                    <Link href="/profile" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2 py-1.5 px-2 hover:bg-amber-50 rounded text-gray-700 font-medium">
-                      <User size={14} className="text-[#007185]" /> Profile &amp; Addresses
+                  <div className="p-2 text-xs space-y-0.5">
+                    <Link href="/profile" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 py-2 px-3 hover:bg-slate-50 rounded-xl text-slate-700 font-medium transition-colors">
+                      <User size={15} className="text-blue-600" /> My Profile
                     </Link>
-                    <Link href="/orders" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2 py-1.5 px-2 hover:bg-amber-50 rounded text-gray-700 font-medium">
-                      <Package size={14} className="text-[#ffa41c]" /> Your Orders
+                    <Link href="/orders" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 py-2 px-3 hover:bg-slate-50 rounded-xl text-slate-700 font-medium transition-colors">
+                      <Package size={15} className="text-slate-600" /> Orders & Shipping
                     </Link>
-                    <Link href="/wishlist" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2 py-1.5 px-2 hover:bg-amber-50 rounded text-gray-700 font-medium">
-                      <Heart size={14} className="text-red-500" /> Wishlist
+                    <Link href="/wishlist" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 py-2 px-3 hover:bg-slate-50 rounded-xl text-slate-700 font-medium transition-colors">
+                      <Heart size={15} className="text-rose-500" /> Wishlist Vault
                     </Link>
-                    <Link href="/notifications" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2 py-1.5 px-2 hover:bg-amber-50 rounded text-gray-700 font-medium">
-                      <Bell size={14} className="text-blue-500" /> Notifications
+                    <Link href="/notifications" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 py-2 px-3 hover:bg-slate-50 rounded-xl text-slate-700 font-medium transition-colors">
+                      <Bell size={15} className="text-amber-500" /> Notifications
                       {unreadNotifs > 0 && (
-                        <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unreadNotifs}</span>
+                        <span className="ml-auto bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadNotifs}</span>
                       )}
                     </Link>
                     {isAdmin && (
-                      <Link href="/admin" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2 py-1.5 px-2 hover:bg-purple-50 rounded text-purple-700 font-semibold">
-                        <ShieldCheck size={14} /> Admin Panel
+                      <Link href="/admin" onClick={() => setShowAccountMenu(false)} className="flex items-center gap-2.5 py-2 px-3 hover:bg-purple-50 rounded-xl text-purple-700 font-semibold border border-purple-100 mt-1">
+                        <ShieldCheck size={15} className="text-purple-600" /> Admin Console
                       </Link>
                     )}
                     {user && (
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 py-1.5 px-2 hover:bg-red-50 text-red-600 font-bold rounded text-left border-t border-gray-100 mt-2 pt-3"
+                        className="w-full flex items-center gap-2.5 py-2 px-3 hover:bg-rose-50 text-rose-600 font-semibold rounded-xl text-left border-t border-slate-100 mt-1 pt-2 transition-colors"
                       >
-                        <LogOut size={14} /> Sign Out
+                        <LogOut size={15} /> Sign Out
                       </button>
                     )}
                   </div>
@@ -336,71 +347,54 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Returns & Orders */}
+            {/* Orders Link */}
             <Link
               href="/orders"
-              className="hover:outline hover:outline-1 hover:outline-white px-2 py-1 rounded text-left hidden sm:block"
+              className="hidden md:flex items-center gap-1.5 px-3.5 py-1.5 rounded-full liquid-glass-pill text-xs font-bold text-slate-700 hover:text-slate-900 transition-all"
             >
-              <p className="text-[11px] text-gray-300 leading-none">Returns</p>
-              <p className="text-xs font-extrabold text-white">&amp; Orders</p>
+              <Package size={14} className="text-slate-500" />
+              <span>Orders</span>
             </Link>
 
-            {/* Bell icon (visible when logged in) */}
-            {mounted && user && (
-              <Link
-                href="/notifications"
-                className="relative hover:outline hover:outline-1 hover:outline-white px-2 py-1 rounded hidden md:flex items-center"
-                aria-label="Notifications"
-              >
-                <Bell size={24} className="text-white" />
-                {unreadNotifs > 0 && (
-                  <span className="absolute -top-0.5 right-0.5 min-w-[18px] h-[18px] bg-[#f08804] text-[#111] text-[10px] font-black rounded-full flex items-center justify-center px-1">
-                    {unreadNotifs > 9 ? '9+' : unreadNotifs}
-                  </span>
-                )}
-              </Link>
-            )}
-
-            {/* Wishlist heart (visible when logged in) */}
-            {mounted && user && (
-              <Link
-                href="/wishlist"
-                className="relative hover:outline hover:outline-1 hover:outline-white px-2 py-1 rounded hidden md:flex items-center"
-                aria-label={`Wishlist with ${wishlistItems.length} items`}
-              >
-                <Heart size={24} className={wishlistItems.length > 0 ? 'text-white fill-red-400' : 'text-white'} />
-                {wishlistItems.length > 0 && (
-                  <span className="absolute -top-0.5 right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
-                    {wishlistItems.length > 9 ? '9+' : wishlistItems.length}
-                  </span>
-                )}
-              </Link>
-            )}
+            {/* Wishlist Link */}
+            <Link
+              href="/wishlist"
+              className="relative p-2 sm:p-2.5 rounded-full liquid-glass-pill text-slate-700 hover:text-rose-600 transition-all flex items-center justify-center"
+              aria-label="Wishlist"
+            >
+              <Heart size={16} className={wishlistItems.length > 0 ? 'fill-rose-500 text-rose-500' : ''} />
+              {mounted && wishlistItems.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {wishlistItems.length}
+                </span>
+              )}
+            </Link>
 
             {/* Cart Button */}
             <button
               onClick={toggleCart}
-              className="relative flex items-end gap-1 hover:outline hover:outline-1 hover:outline-white px-2 py-1 rounded cursor-pointer"
+              className="flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-slate-950 hover:bg-blue-600 text-white font-extrabold text-xs shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               aria-label={`Cart with ${cartCount} items`}
             >
-              <div className="relative">
-                <ShoppingCart size={28} className="text-white" />
+              <div className="relative flex items-center">
+                <ShoppingCart size={15} />
                 <span
                   suppressHydrationWarning
-                  className="absolute -top-1.5 left-2.5 min-w-[20px] h-[20px] bg-[#f08804] text-[#111] text-[11px] font-black rounded-full flex items-center justify-center px-1 shadow-sm"
+                  className="absolute -top-2 -right-2.5 min-w-[18px] h-[18px] bg-amber-400 text-slate-950 text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-slate-950 shadow-xs"
                 >
                   {mounted ? cartCount : 0}
                 </span>
               </div>
-              <span className="text-xs font-extrabold pb-0.5 hidden md:block text-white">Cart</span>
+              <span className="hidden sm:inline-block ml-1 tracking-wide font-extrabold">Cart</span>
             </button>
 
           </div>
-          </div>
-          {/* Mobile Full-Width Search Bar */}
-          {renderSearchForm(true)}
         </div>
+
+        {/* Mobile Full-Width Search Bar */}
+        {renderSearchForm(true)}
       </nav>
     </header>
   );
 }
+

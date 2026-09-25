@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Bell, Check, Trash2, Package, Truck, CheckCircle2, XCircle, Tag, MessageSquare } from 'lucide-react';
+import { Bell, Check, Trash2, Package, Truck, CheckCircle2, XCircle, Tag, MessageSquare, Sparkles, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
@@ -17,12 +17,12 @@ interface Notification {
 }
 
 const typeIcon: Record<string, React.ReactNode> = {
-  order_placed: <Package className="w-5 h-5 text-blue-500" />,
-  order_shipped: <Truck className="w-5 h-5 text-orange-500" />,
-  order_delivered: <CheckCircle2 className="w-5 h-5 text-green-500" />,
-  order_cancelled: <XCircle className="w-5 h-5 text-red-500" />,
-  wishlist_deal: <Tag className="w-5 h-5 text-yellow-500" />,
-  review_reply: <MessageSquare className="w-5 h-5 text-purple-500" />,
+  order_placed: <Package className="w-5 h-5 text-cyan-400" />,
+  order_shipped: <Truck className="w-5 h-5 text-amber-400" />,
+  order_delivered: <CheckCircle2 className="w-5 h-5 text-emerald-400" />,
+  order_cancelled: <XCircle className="w-5 h-5 text-rose-400" />,
+  wishlist_deal: <Tag className="w-5 h-5 text-yellow-400" />,
+  review_reply: <MessageSquare className="w-5 h-5 text-purple-400" />,
 };
 
 function timeAgo(dateStr: string): string {
@@ -79,24 +79,27 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[70vh] bg-amazon_bg flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-amazon_yellow border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-[70vh] bg-[#f8fafc] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-slate-900 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-amazon_bg py-8 px-4 md:px-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-[#f8fafc] py-8 px-4 md:px-8 text-slate-900">
+      <div className="max-w-3xl mx-auto space-y-6">
+        
+        {/* Header Bar */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-amazon_blue flex items-center gap-2">
-              <Bell className="w-7 h-7" />
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold mb-1">
+              Inbox &amp; Order Alerts
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold font-display text-slate-900 flex items-center gap-3">
               Notifications
               {unreadCount > 0 && (
-                <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  {unreadCount}
+                <span className="bg-slate-900 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
+                  {unreadCount} unread
                 </span>
               )}
             </h1>
@@ -104,65 +107,68 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="text-sm text-amazon_blue hover:text-amazon_orange flex items-center gap-1 font-medium"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/70 border border-slate-200 px-4 py-2 rounded-xl transition-colors font-bold"
             >
-              <Check className="w-4 h-4" /> Mark all as read
+              <Check className="w-4 h-4 text-slate-900" /> Mark all as read
             </button>
           )}
         </div>
 
         {notifications.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center shadow-sm">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Bell className="w-10 h-10 text-gray-300" />
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-16 text-center shadow-sm max-w-lg mx-auto my-8">
+            <div className="w-16 h-16 bg-slate-50 border border-slate-200 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+              <Bell className="w-8 h-8" />
             </div>
-            <h2 className="text-xl font-bold text-amazon_blue mb-2">You&apos;re all caught up!</h2>
-            <p className="text-sm text-gray-500">No notifications yet. We&apos;ll notify you when something happens.</p>
+            <h2 className="text-lg font-bold font-display text-slate-900 mb-1">You&apos;re all caught up!</h2>
+            <p className="text-xs text-slate-500 leading-relaxed">No new notifications. We&apos;ll keep you updated on order dispatches and account alerts.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm divide-y divide-gray-100">
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm divide-y divide-slate-100 overflow-hidden">
             {notifications.map((notif) => (
               <div
                 key={notif._id}
-                className={`flex items-start gap-4 px-4 py-4 hover:bg-gray-50 transition ${
-                  !notif.isRead ? 'bg-blue-50' : ''
+                className={`flex items-start gap-4 p-5 hover:bg-slate-50/80 transition-colors ${
+                  !notif.isRead ? 'bg-slate-50/50 border-l-4 border-l-slate-900' : ''
                 }`}
               >
-                <div className="flex-shrink-0 mt-0.5">
-                  {typeIcon[notif.type] || <Bell className="w-5 h-5 text-gray-400" />}
+                <div className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 flex-shrink-0 mt-0.5">
+                  {typeIcon[notif.type] || <Bell className="w-5 h-5 text-slate-600" />}
                 </div>
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-amazon_blue text-sm">{notif.title}</span>
+                    <span className="font-bold font-display text-slate-900 text-sm">{notif.title}</span>
                     {!notif.isRead && (
-                      <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                      <span className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0" />
                     )}
                   </div>
-                  <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notif.message}</p>
-                  <div className="flex items-center gap-3 mt-1.5">
-                    <span className="text-xs text-gray-400">{timeAgo(notif.createdAt)}</span>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">{notif.message}</p>
+                  
+                  <div className="flex items-center gap-4 mt-3">
+                    <span className="text-[11px] text-slate-400 font-mono">{timeAgo(notif.createdAt)}</span>
                     {notif.link && (
                       <Link
                         href={notif.link}
                         onClick={() => markRead(notif._id)}
-                        className="text-xs text-amazon_blue hover:underline font-medium"
+                        className="text-xs text-blue-600 hover:underline font-semibold flex items-center gap-1"
                       >
-                        View details →
+                        View details <ArrowRight className="w-3 h-3" />
                       </Link>
                     )}
                     {!notif.isRead && (
                       <button
                         onClick={() => markRead(notif._id)}
-                        className="text-xs text-gray-500 hover:text-amazon_blue"
+                        className="text-[11px] text-slate-500 hover:text-slate-900 transition-colors"
                       >
                         Mark read
                       </button>
                     )}
                   </div>
                 </div>
+
                 <button
                   onClick={() => deleteNotif(notif._id)}
-                  className="flex-shrink-0 text-gray-300 hover:text-red-500 transition p-1 rounded"
+                  className="flex-shrink-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-xl transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -174,3 +180,4 @@ export default function NotificationsPage() {
     </div>
   );
 }
+

@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import ProductSkeleton from '@/components/ProductSkeleton';
-import { Search, Filter, AlertCircle } from 'lucide-react';
+import { Search, Sparkles, SlidersHorizontal, Layers } from 'lucide-react';
 
 function SearchResultsContent() {
   const searchParams = useSearchParams();
@@ -40,19 +40,34 @@ function SearchResultsContent() {
   }, [query, category]);
 
   return (
-    <div className="min-h-screen bg-amazon_bg py-6 px-4 md:px-8">
+    <div className="min-h-screen bg-[#f8fafc] py-8 px-4 md:px-8 text-slate-900">
       <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* Search Title & Summary Bar */}
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
-          <div>
-            <span className="text-gray-500">Results for </span>
-            <span className="font-extrabold text-amazon_orange text-base md:text-lg">&quot;{query || 'All Products'}&quot;</span>
-            {category && category !== 'All' && (
-              <span className="text-gray-600 font-semibold"> in {category}</span>
-            )}
+        {/* Search Header Bar */}
+        <div className="bg-white p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-200/90 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-800">
+              <Search className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                <span>Search Results</span>
+                {category && category !== 'All' && (
+                  <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-800 px-2.5 py-0.5 rounded-full text-[11px] border border-slate-200 font-bold capitalize">
+                    <Layers className="w-3 h-3" /> {category}
+                  </span>
+                )}
+              </div>
+              <h1 className="text-xl md:text-2xl font-bold font-display text-slate-900 mt-0.5">
+                &quot;<span>{query || 'All Collections'}</span>&quot;
+              </h1>
+            </div>
           </div>
-          <span className="text-gray-500 font-medium">1-{products.length} of over {totalCount} results</span>
+          <div className="flex items-center gap-3 text-xs text-slate-500 font-medium self-end sm:self-center">
+            <span className="bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+              Showing <strong className="text-slate-900">{products.length}</strong> of <strong className="text-slate-900">{totalCount}</strong> items
+            </span>
+          </div>
         </div>
 
         {/* Products Grid */}
@@ -61,11 +76,13 @@ function SearchResultsContent() {
             <ProductSkeleton count={8} />
           </div>
         ) : products.length === 0 ? (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center shadow-sm">
-            <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h2 className="text-lg font-bold text-gray-800 mb-1">No results matching &quot;{query}&quot;</h2>
-            <p className="text-xs text-gray-500 max-w-sm mx-auto">
-              Check your spelling or try searching with more generic keywords.
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-16 text-center max-w-xl mx-auto shadow-sm my-8">
+            <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto mb-4 text-slate-400">
+              <Search className="w-8 h-8" />
+            </div>
+            <h2 className="text-lg font-bold font-display text-slate-900 mb-1">No items found matching &quot;{query}&quot;</h2>
+            <p className="text-xs text-slate-500 leading-relaxed mb-6">
+              Try adjusting your query or browsing our popular product categories.
             </p>
           </div>
         ) : (
@@ -84,11 +101,12 @@ function SearchResultsContent() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-[70vh] bg-amazon_bg flex items-center justify-center p-6">
-        <div className="w-10 h-10 border-4 border-amazon_yellow border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-[70vh] bg-[#f8fafc] flex items-center justify-center p-6">
+        <div className="w-8 h-8 border-3 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
       </div>
     }>
       <SearchResultsContent />
     </Suspense>
   );
 }
+

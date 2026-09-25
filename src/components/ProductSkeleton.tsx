@@ -6,23 +6,18 @@ export default function ProductSkeleton({ count = 4 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="bg-white rounded-md border border-gray-200 p-4 flex flex-col animate-pulse"
+          className="glass-panel rounded-2xl border border-slate-800/80 p-4 flex flex-col justify-between animate-pulse h-80"
         >
-          {/* Image placeholder */}
-          <div className="h-48 bg-gray-200 rounded mb-3" />
-          {/* Title */}
-          <div className="h-3.5 bg-gray-200 rounded w-full mb-1.5" />
-          <div className="h-3.5 bg-gray-200 rounded w-3/4 mb-2" />
-          {/* Brand */}
-          <div className="h-3 bg-gray-200 rounded w-1/3 mb-2" />
-          {/* Stars */}
-          <div className="h-3 bg-gray-200 rounded w-24 mb-2" />
-          {/* Price */}
-          <div className="h-5 bg-gray-200 rounded w-20 mb-2" />
-          {/* Prime */}
-          <div className="h-3 bg-gray-200 rounded w-28 mb-3" />
-          {/* Button */}
-          <div className="h-8 bg-gray-200 rounded-full" />
+          <div>
+            <div className="h-44 bg-slate-800/60 rounded-xl mb-3 skeleton-shimmer" />
+            <div className="h-3 bg-slate-800/60 rounded w-full mb-2 skeleton-shimmer" />
+            <div className="h-3 bg-slate-800/60 rounded w-3/4 mb-3 skeleton-shimmer" />
+            <div className="h-3 bg-slate-800/60 rounded w-1/3 mb-2 skeleton-shimmer" />
+          </div>
+          <div className="pt-2 border-t border-slate-800/60">
+            <div className="h-5 bg-slate-800/60 rounded w-24 mb-2 skeleton-shimmer" />
+            <div className="h-9 bg-slate-800/80 rounded-xl skeleton-shimmer" />
+          </div>
         </div>
       ))}
     </>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
   Star,
-  ShoppingCart,
+  ShoppingBag,
   ChevronLeft,
   ChevronRight,
   Check,
@@ -13,6 +13,8 @@ import {
   RefreshCw,
   Shield,
   Heart,
+  Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
@@ -53,7 +55,6 @@ export default function ProductDetailPage() {
         if (data.product?.sizes?.length) {
           setSelectedSize(data.product.sizes[0]);
         }
-        // Log view history
         fetch('/api/user/history', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -75,7 +76,6 @@ export default function ProductDetailPage() {
     if (asin) fetchProduct();
   }, [asin, router]);
 
-  // Fetch wishlist state on mount so heart button reflects current state
   useEffect(() => {
     fetchWishlist();
   }, [fetchWishlist]);
@@ -121,15 +121,14 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1480px] mx-auto px-4 py-8 animate-pulse">
-        <div className="bg-white rounded-md p-6 flex flex-col md:flex-row gap-8">
-          <div className="w-full md:w-2/5 h-96 bg-gray-200 rounded" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-pulse bg-[#f8fafc]">
+        <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-8">
+          <div className="w-full lg:w-2/5 h-96 bg-slate-100 rounded-xl skeleton-shimmer" />
           <div className="flex-1 space-y-4">
-            <div className="h-6 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
-            <div className="h-8 bg-gray-200 rounded w-1/4" />
-            <div className="h-10 bg-gray-200 rounded" />
-            <div className="h-10 bg-gray-200 rounded" />
+            <div className="h-8 bg-slate-100 rounded w-3/4 skeleton-shimmer" />
+            <div className="h-4 bg-slate-100 rounded w-1/2 skeleton-shimmer" />
+            <div className="h-10 bg-slate-100 rounded w-1/3 skeleton-shimmer" />
+            <div className="h-12 bg-slate-100 rounded-xl skeleton-shimmer" />
           </div>
         </div>
       </div>
@@ -144,82 +143,86 @@ export default function ProductDetailPage() {
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : null;
 
+  const isLiked = isInWishlist(product.asin);
+
   return (
-    <div className="bg-white min-h-screen">
-      <div className="max-w-[1480px] mx-auto px-4 py-4">
-        {/* Breadcrumb */}
-        <nav className="text-xs text-amazon-teal mb-4 flex items-center gap-1 flex-wrap">
-          <Link href="/" className="hover:underline">Home</Link>
-          <span className="text-gray-400">›</span>
-          <Link href="/products" className="hover:underline">Products</Link>
-          <span className="text-gray-400">›</span>
-          <Link href={`/products?category=${product.category}`} className="hover:underline">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Breadcrumb Navigation */}
+        <nav className="text-xs text-slate-500 flex items-center gap-1.5 flex-wrap font-medium">
+          <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
+          <span className="text-slate-400">&rsaquo;</span>
+          <Link href="/products" className="hover:text-blue-600 transition-colors">Catalog</Link>
+          <span className="text-slate-400">&rsaquo;</span>
+          <Link href={`/products?category=${product.category}`} className="hover:text-blue-600 transition-colors capitalize">
             {product.category}
           </Link>
-          <span className="text-gray-400">›</span>
-          <span className="text-gray-600 line-clamp-1">{product.title}</span>
+          <span className="text-slate-400">&rsaquo;</span>
+          <span className="text-slate-900 line-clamp-1 font-semibold">{product.title}</span>
         </nav>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Image Gallery */}
+        {/* Main Product Card Grid */}
+        <div className="bg-white p-6 sm:p-10 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col lg:flex-row gap-10">
+          
+          {/* Image Gallery Column */}
           <div className="lg:w-2/5">
-            <div className="sticky top-20">
-              {/* Main Image */}
-              <div className="relative bg-gray-50 rounded-md overflow-hidden mb-3 flex items-center justify-center h-64 sm:h-96 p-2">
+            <div className="sticky top-24 space-y-4">
+              
+              {/* Primary Image Container */}
+              <div className="relative bg-slate-50 rounded-xl overflow-hidden border border-slate-200/80 flex items-center justify-center h-80 sm:h-96 p-6">
                 <img
                   src={images[activeImage]}
                   alt={product.title}
-                  className="max-h-full max-w-full object-contain"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-all duration-300"
                 />
+
                 {/* Floating Wishlist Heart Button */}
                 <button
                   onClick={handleToggleWishlist}
                   disabled={wishlistLoading}
-                  title={isInWishlist(product.asin) ? 'Remove from Wish List' : 'Add to Wish List'}
-                  className={`absolute top-3 right-3 p-2 rounded-full shadow-md transition-all duration-200 disabled:opacity-60 ${
-                    isInWishlist(product.asin)
-                      ? 'bg-red-50 hover:bg-red-100 text-red-500'
-                      : 'bg-white/90 hover:bg-white text-gray-400 hover:text-red-500'
+                  title={isLiked ? 'Remove from Wish List' : 'Add to Wish List'}
+                  className={`absolute top-3 right-3 p-2.5 rounded-full border shadow-sm transition-all duration-200 ${
+                    isLiked
+                      ? 'bg-rose-50 text-rose-600 border-rose-200 shadow-rose-100'
+                      : 'bg-white text-slate-400 border-slate-200 hover:text-rose-500 hover:border-rose-200'
                   }`}
                 >
-                  <Heart
-                    size={22}
-                    className={`transition-all duration-200 ${
-                      isInWishlist(product.asin) ? 'fill-red-500 text-red-500' : ''
-                    }`}
-                  />
+                  <Heart size={18} className={isLiked ? 'fill-rose-500 text-rose-500' : ''} />
                 </button>
+
                 {images.length > 1 && (
                   <>
                     <button
                       onClick={() => setActiveImage((i) => Math.max(0, i - 1))}
                       disabled={activeImage === 0}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-md rounded-full p-2 disabled:opacity-30 transition-all"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md border border-slate-200 hover:bg-white text-slate-800 disabled:opacity-30"
                     >
                       <ChevronLeft size={18} />
                     </button>
                     <button
                       onClick={() => setActiveImage((i) => Math.min(images.length - 1, i + 1))}
                       disabled={activeImage === images.length - 1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white shadow-md rounded-full p-2 disabled:opacity-30 transition-all"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 shadow-md border border-slate-200 hover:bg-white text-slate-800 disabled:opacity-30"
                     >
                       <ChevronRight size={18} />
                     </button>
                   </>
                 )}
               </div>
-              {/* Thumbnails */}
+
+              {/* Thumbnail Selector */}
               {images.length > 1 && (
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-3 overflow-x-auto no-scrollbar py-1">
                   {images.map((img: string, i: number) => (
                     <button
                       key={i}
                       onClick={() => setActiveImage(i)}
-                      className={`w-16 h-16 border-2 rounded overflow-hidden flex-shrink-0 transition-colors ${
-                        activeImage === i ? 'border-amazon-orange-btn' : 'border-gray-200 hover:border-gray-400'
+                      className={`w-16 h-16 rounded-lg bg-slate-50 p-1.5 border-2 transition-all flex-shrink-0 ${
+                        activeImage === i ? 'border-blue-600 shadow-sm scale-105' : 'border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-contain" />
+                      <img src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
                     </button>
                   ))}
                 </div>
@@ -227,262 +230,247 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Product Info */}
-          <div className="flex-1">
-            {/* Badge */}
-            {product.badge && (
-              <div className="inline-block text-xs font-bold text-white bg-amazon-orange-btn px-2 py-0.5 rounded mb-2">
-                {product.badge}
-              </div>
-            )}
+          {/* Product Details & Purchase Form */}
+          <div className="flex-1 space-y-6">
+            
+            {/* Header Title & Badges */}
+            <div>
+              {product.badge && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white mb-3">
+                  <Sparkles size={13} className="text-amber-400" /> {product.badge}
+                </span>
+              )}
 
-            <h1 className="text-xl font-medium text-gray-900 mb-1">{product.title}</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 leading-tight font-display">
+                {product.title}
+              </h1>
 
-            {product.brand && (
-              <p className="text-sm text-amazon-teal mb-2">
-                by{' '}
-                <Link href={`/products?q=${product.brand}`} className="hover:underline">
-                  {product.brand}
-                </Link>
-              </p>
-            )}
+              {product.brand && (
+                <p className="text-xs text-slate-500 mt-2 font-medium">
+                  Brand: <Link href={`/products?q=${product.brand}`} className="hover:underline text-blue-600 font-semibold">{product.brand}</Link>
+                </p>
+              )}
+            </div>
 
-            {/* Rating */}
-            <div className="flex items-center gap-2 mb-3">
-              <div className="flex">
+            {/* Star Rating */}
+            <div className="flex items-center gap-2">
+              <div className="flex text-amber-400">
                 {Array.from({ length: 5 }, (_, i) => (
                   <Star
                     key={i}
                     size={16}
-                    className={
-                      i < Math.floor(product.rating)
-                        ? 'fill-amazon-orange text-amazon-orange'
-                        : 'text-gray-300'
-                    }
+                    className={i < Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}
                   />
                 ))}
               </div>
-              <span className="text-sm text-amazon-teal hover:underline cursor-pointer">
-                {product.rating} ({product.reviewCount?.toLocaleString()} ratings)
-              </span>
+              <span className="text-xs text-slate-800 font-bold ml-1">{product.rating}</span>
+              <span className="text-xs text-slate-400 font-normal">({product.reviewCount?.toLocaleString()} reviews)</span>
             </div>
 
-            <hr className="border-gray-200 mb-3" />
+            <div className="border-t border-slate-100 pt-5">
+              
+              {/* Price Box */}
+              <div className="mb-5">
+                {discount && (
+                  <div className="text-xs text-slate-400 mb-1 font-medium">
+                    List Price: <span className="line-through">${product.originalPrice?.toFixed(2)}</span>
+                    <span className="ml-2 text-rose-600 font-bold">Save {discount}%</span>
+                  </div>
+                )}
+                <div className="flex items-baseline gap-3">
+                  <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-display">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  {product.isPrime && (
+                    <span className="text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 rounded-md">
+                      Express Delivery
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  Inclusive of all taxes · Free standard delivery on orders over $50
+                </p>
+              </div>
 
-            {/* Price */}
-            <div className="mb-4">
-              {discount && (
-                <div className="text-sm text-gray-500 mb-1">
-                  List Price:{' '}
-                  <span className="line-through">${product.originalPrice?.toFixed(2)}</span>
-                  <span className="ml-2 text-red-600 font-semibold">Save {discount}%</span>
+              {/* Stock Status */}
+              <div className={`text-xs font-bold mb-4 flex items-center gap-1.5 ${product.inStock ? 'text-emerald-700' : 'text-rose-600'}`}>
+                <span className={`w-2 h-2 rounded-full ${product.inStock ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                {product.inStock ? 'In Stock & Ready to Dispatch' : 'Currently Out of Stock'}
+              </div>
+
+              {/* Color Swatches */}
+              {product.colors?.length > 0 && (
+                <div className="mb-4 space-y-2">
+                  <p className="text-xs font-bold text-slate-700">
+                    Color: <span className="text-slate-900">{selectedColor}</span>
+                  </p>
+                  <div className="flex gap-2.5 flex-wrap">
+                    {product.colors.map((c: any) => (
+                      <button
+                        key={c.name}
+                        onClick={() => setSelectedColor(c.name)}
+                        title={c.name}
+                        className={`w-8 h-8 rounded-full border-2 transition-all ${
+                          selectedColor === c.name ? 'border-slate-900 scale-110 shadow-sm ring-2 ring-slate-400/20' : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                        style={{ backgroundColor: c.hex }}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-gray-900">
-                  <sup className="text-lg">$</sup>
-                  {Math.floor(product.price)}
-                  <sup className="text-lg">{(product.price % 1).toFixed(2).slice(1)}</sup>
-                </span>
-                {product.isPrime && (
-                  <span className="text-sm font-bold text-amazon-dark bg-amazon-yellow px-2 py-0.5 rounded">
-                    prime
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-gray-600 mt-1">
-                FREE Returns · FREE delivery{' '}
-                <span className="font-bold">within 7 business days</span>
-              </p>
-            </div>
 
-            {/* In Stock */}
-            <div className={`text-lg font-medium mb-3 ${product.inStock ? 'text-amazon-green' : 'text-red-600'}`}>
-              {product.inStock ? 'In Stock' : 'Currently unavailable'}
-            </div>
-
-            {/* Color Selection */}
-            {product.colors?.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-800 mb-2">
-                  Color: <span className="font-normal">{selectedColor}</span>
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  {product.colors.map((c: any) => (
-                    <button
-                      key={c.name}
-                      onClick={() => setSelectedColor(c.name)}
-                      title={c.name}
-                      className={`w-8 h-8 rounded-full border-4 transition-all ${
-                        selectedColor === c.name
-                          ? 'border-amazon-teal scale-110'
-                          : 'border-gray-300 hover:border-gray-500'
-                      }`}
-                      style={{ backgroundColor: c.hex }}
-                    />
-                  ))}
+              {/* Size Swatches */}
+              {product.sizes?.length > 0 && (
+                <div className="mb-4 space-y-2">
+                  <p className="text-xs font-bold text-slate-700">
+                    Size: <span className="text-slate-900">{selectedSize}</span>
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    {product.sizes.map((s: string) => (
+                      <button
+                        key={s}
+                        onClick={() => setSelectedSize(s)}
+                        className={`px-3.5 py-1.5 border rounded-lg text-xs font-bold transition-all ${
+                          selectedSize === s
+                            ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
+                            : 'border-slate-200 text-slate-700 hover:border-slate-300 bg-white'
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Size Selection */}
-            {product.sizes?.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-800 mb-2">
-                  Size: <span className="font-normal">{selectedSize}</span>
-                </p>
-                <div className="flex gap-2 flex-wrap">
-                  {product.sizes.map((s: string) => (
+              {/* Quantity Select */}
+              <div className="flex items-center gap-3 mb-6">
+                <label className="text-xs font-bold text-slate-700">Quantity:</label>
+                <select
+                  value={quantity}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  className="bg-white border border-slate-200 text-slate-900 rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-900/10"
+                >
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3 max-w-md pt-2">
+                {product.inStock && (
+                  <>
                     <button
-                      key={s}
-                      onClick={() => setSelectedSize(s)}
-                      className={`px-3 py-1.5 border rounded text-sm font-medium transition-all ${
-                        selectedSize === s
-                          ? 'border-amazon-teal bg-amazon-teal/10 text-amazon-teal'
-                          : 'border-gray-300 hover:border-amazon-orange-btn'
+                      onClick={handleAddToCart}
+                      className={`w-full py-4 rounded-full font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 shadow-xl cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
+                        addedToCart
+                          ? 'bg-emerald-600 text-white shadow-emerald-600/30'
+                          : 'bg-slate-950 hover:bg-blue-600 text-white shadow-slate-950/20'
                       }`}
                     >
-                      {s}
+                      {addedToCart ? (
+                        <>
+                          <Check size={16} /> Added to Shopping Bag!
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingBag size={16} /> Add to Bag
+                        </>
+                      )}
                     </button>
-                  ))}
+                    <button
+                      onClick={handleBuyNow}
+                      className="w-full py-4 rounded-full font-black text-xs uppercase tracking-wider bg-blue-600 hover:bg-blue-500 text-white transition-all duration-300 shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                    >
+                      <span>Buy Now with 1-Click</span>
+                      <ArrowRight size={15} />
+                    </button>
+                  </>
+                )}
+
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={wishlistLoading}
+                  className={`w-full py-3.5 rounded-full font-extrabold text-xs border transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shadow-xs ${
+                    isLiked
+                      ? 'border-rose-200 bg-rose-50 text-rose-700'
+                      : 'border-slate-200/90 liquid-glass-pill text-slate-800 hover:text-rose-600'
+                  }`}
+                >
+                  <Heart size={15} className={isLiked ? 'fill-rose-500 text-rose-500' : ''} />
+                  {isLiked ? 'Remove from Saved Wishlist' : 'Add to Wishlist'}
+                </button>
+              </div>
+
+              {/* Trust Badges */}
+              <div className="mt-6 border border-slate-200/80 rounded-xl p-4 space-y-3 bg-slate-50/50 text-xs">
+                <div className="flex items-center gap-3 text-slate-700">
+                  <Truck size={18} className="text-blue-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-bold">Fast &amp; Tracked Shipping</span>
+                    <p className="text-[11px] text-slate-500">Delivered securely with real-time status</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-slate-700">
+                  <RefreshCw size={18} className="text-blue-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-bold">30-Day Effortless Returns</span>
+                    <p className="text-[11px] text-slate-500">Hassle-free replacement or refund</p>
+                  </div>
                 </div>
               </div>
-            )}
 
-            {/* Quantity */}
-            <div className="flex items-center gap-3 mb-4">
-              <label className="text-sm font-semibold text-gray-800">Qty:</label>
-              <select
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="border border-gray-300 rounded px-3 py-1.5 text-sm bg-gray-50 focus:outline-none focus:border-amazon-orange-btn"
-              >
-                {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* CTAs */}
-            <div className="flex flex-col gap-3 w-full max-w-md">
-              {product.inStock && (
-                <>
-                  <button
-                    onClick={handleAddToCart}
-                    className={`w-full py-3 rounded-full font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-sm ${
-                      addedToCart
-                        ? 'bg-green-500 text-white'
-                        : 'bg-amazon-yellow hover:bg-amazon-yellow-hover text-amazon-dark'
-                    }`}
-                  >
-                    {addedToCart ? (
-                      <>
-                        <Check size={16} /> Added to Cart!
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingCart size={16} /> Add to Cart
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={handleBuyNow}
-                    className="w-full py-3 rounded-full font-bold text-sm bg-amazon-orange hover:bg-orange-400 text-amazon-dark transition-colors shadow-sm"
-                  >
-                    Buy Now
-                  </button>
-                </>
-              )}
-
-              {/* Add to Wish List — always visible */}
-              <button
-                onClick={handleToggleWishlist}
-                disabled={wishlistLoading}
-                className={`w-full py-2.5 rounded-full font-semibold text-sm border transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
-                  isInWishlist(product.asin)
-                    ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
-                    : 'border-gray-300 bg-white text-gray-700 hover:border-red-300 hover:text-red-500 hover:bg-red-50'
-                }`}
-              >
-                <Heart
-                  size={16}
-                  className={isInWishlist(product.asin) ? 'fill-red-500 text-red-500' : ''}
-                />
-                {isInWishlist(product.asin) ? 'Remove from Wish List' : 'Add to Wish List'}
-              </button>
-            </div>
-
-            {/* Trust Badges */}
-            <div className="mt-5 border border-gray-200 rounded-md p-4 space-y-2.5 w-full max-w-md text-sm bg-gray-50/50">
-              <div className="flex items-start gap-3">
-                <Truck size={18} className="text-gray-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <span className="font-semibold">FREE Shipping</span>
-                  <p className="text-xs text-gray-500">On orders over $25</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <RefreshCw size={18} className="text-gray-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <span className="font-semibold">Free Returns</span>
-                  <p className="text-xs text-gray-500">Return within 30 days</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Shield size={18} className="text-gray-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <span className="font-semibold">Secure Payment</span>
-                  <p className="text-xs text-gray-500">256-bit SSL encryption</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Features / Description */}
+        {/* Features & Specifications */}
         {(product.features?.length > 0 || product.description) && (
-          <div className="mt-8 bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">About this item</h2>
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/90 shadow-sm space-y-4">
+            <h2 className="text-lg font-bold text-slate-900 font-display">Product Overview &amp; Details</h2>
             {product.features?.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="space-y-2.5 text-xs text-slate-600 font-normal">
                 {product.features.map((f: string, i: number) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="text-amazon-green font-bold mt-0.5">›</span>
-                    {f}
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="text-blue-600 font-bold mt-0.5">&bull;</span>
+                    <span className="leading-relaxed">{f}</span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-gray-700 leading-relaxed">{product.description}</p>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">{product.description}</p>
             )}
           </div>
         )}
 
-        {/* Related Products */}
+        {/* Related Products Grid */}
         {related.length > 0 && (
-          <div className="mt-8 bg-white border border-gray-200 rounded-md p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Customers also viewed
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {related.slice(0, 8).map((p: any) => (
+          <div className="bg-white p-8 rounded-2xl border border-slate-200/90 shadow-sm space-y-6">
+            <h2 className="text-lg font-bold text-slate-900 font-display">Recommended For You</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {related.slice(0, 6).map((p: any) => (
                 <Link
                   key={p.asin}
                   href={`/product/${p.asin}`}
-                  className="flex flex-col items-center text-center group p-3 rounded hover:shadow-md transition-shadow"
+                  className="bg-white p-3 rounded-xl border border-slate-200/80 hover:border-slate-300 hover:shadow-md transition-all text-center flex flex-col justify-between group"
                 >
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className="w-full h-28 object-contain mb-2 group-hover:scale-105 transition-transform"
-                  />
-                  <p className="text-xs text-amazon-teal group-hover:underline line-clamp-2 mb-1">{p.title}</p>
-                  <p className="text-sm font-bold text-gray-900">${p.price.toFixed(2)}</p>
+                  <div className="w-full h-28 bg-slate-50 p-2 rounded-lg border border-slate-100 mb-2 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform"
+                    />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-800 group-hover:text-blue-600 line-clamp-2 mb-1 transition-colors">{p.title}</p>
+                  <p className="text-xs font-bold text-slate-900">${p.price.toFixed(2)}</p>
                 </Link>
               ))}
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

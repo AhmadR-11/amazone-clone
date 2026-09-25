@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Shield, User } from 'lucide-react';
+import { ArrowLeft, Shield, User, Search, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface UserRow {
@@ -66,80 +66,89 @@ export default function AdminUsersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 md:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/admin" className="text-sm text-gray-500 hover:text-amazon_blue flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" /> Dashboard
-          </Link>
-          <h1 className="text-2xl font-extrabold text-amazon_blue">User Management</h1>
+    <div className="min-h-screen bg-[#0b0f19] py-8 px-4 md:px-8 text-slate-100">
+      <div className="max-w-5xl mx-auto space-y-6">
+        
+        {/* Header Bar */}
+        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <Link href="/admin" className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold mb-2">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+            </Link>
+            <h1 className="text-2xl md:text-3xl font-bold font-display text-white">User Directory</h1>
+            <p className="text-sm text-slate-400 mt-1">Manage registered store accounts & permissions</p>
+          </div>
         </div>
 
-        {/* Search */}
-        <div className="mb-5">
+        {/* Search input */}
+        <div className="relative max-w-md">
+          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Search by name or email..."
-            className="w-full max-w-md border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amazon_yellow"
+            className="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-xs text-slate-100"
           />
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Table Container */}
+        <div className="glass-panel rounded-2xl border border-slate-800/80 shadow-2xl overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-slate-900/80 border-b border-slate-800/80">
               <tr>
                 {['Name', 'Email', 'Role', 'Joined', 'Actions'].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th key={h} className="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-slate-800/60">
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
                     {Array.from({ length: 5 }).map((_, j) => (
-                      <td key={j} className="px-4 py-3">
-                        <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                      <td key={j} className="px-5 py-4">
+                        <div className="h-4 bg-slate-800 rounded-lg animate-pulse" />
                       </td>
                     ))}
                   </tr>
                 ))
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-10 text-center text-gray-400 text-sm">
-                    No users found
+                  <td colSpan={5} className="px-5 py-12 text-center text-slate-500 text-sm">
+                    No users matching search &quot;{search}&quot;
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user._id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-medium text-gray-800">{user.name}</td>
-                    <td className="px-4 py-3 text-gray-500">{user.email}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                        user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'
+                  <tr key={user._id} className="hover:bg-slate-800/40 transition">
+                    <td className="px-5 py-4 font-bold font-display text-white text-xs">{user.name}</td>
+                    <td className="px-5 py-4 text-slate-400 font-mono text-xs">{user.email}</td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                        user.role === 'admin'
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700'
                       }`}>
-                        {user.role === 'admin' ? <Shield className="w-3 h-3" /> : <User className="w-3 h-3" />}
+                        {user.role === 'admin' ? <Shield className="w-3 h-3 text-purple-400" /> : <User className="w-3 h-3" />}
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">
+                    <td className="px-5 py-4 text-slate-500 text-xs font-mono">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-4">
                       {user._id === currentUserId ? (
-                        <span className="text-xs text-gray-400 italic">You</span>
+                        <span className="text-xs text-slate-500 italic">Current Session</span>
                       ) : (
                         <button
                           onClick={() => toggleRole(user._id, user.role)}
-                          className={`text-xs font-semibold px-3 py-1.5 rounded-md border transition ${
+                          className={`text-xs font-semibold px-3 py-1.5 rounded-xl border transition ${
                             user.role === 'admin'
-                              ? 'border-red-300 text-red-600 hover:bg-red-50'
-                              : 'border-purple-300 text-purple-600 hover:bg-purple-50'
+                              ? 'border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20'
+                              : 'border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20'
                           }`}
                         >
                           {user.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
@@ -153,11 +162,11 @@ export default function AdminUsersPage() {
           </table>
 
           {totalPages > 1 && (
-            <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-              <span className="text-xs text-gray-500">Page {page} of {totalPages}</span>
+            <div className="px-6 py-4 border-t border-slate-800/80 flex items-center justify-between">
+              <span className="text-xs text-slate-400 font-mono">Page {page} of {totalPages}</span>
               <div className="flex gap-2">
-                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-xs border rounded hover:border-amazon_blue disabled:opacity-50">Prev</button>
-                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-xs border rounded hover:border-amazon_blue disabled:opacity-50">Next</button>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 text-slate-300 disabled:opacity-50 transition">Prev</button>
+                <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 text-slate-300 disabled:opacity-50 transition">Next</button>
               </div>
             </div>
           )}
@@ -166,3 +175,4 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+

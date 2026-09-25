@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, ShieldCheck, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Order {
@@ -19,12 +19,12 @@ interface Order {
 const STATUSES = ['all', 'placed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
 
 const statusColors: Record<string, string> = {
-  placed: 'bg-blue-100 text-blue-700',
-  processing: 'bg-yellow-100 text-yellow-700',
-  shipped: 'bg-orange-100 text-orange-700',
-  out_for_delivery: 'bg-purple-100 text-purple-700',
-  delivered: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  placed: 'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+  processing: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+  shipped: 'bg-orange-500/20 text-orange-300 border border-orange-500/30',
+  out_for_delivery: 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
+  delivered: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
+  cancelled: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
 };
 
 export default function AdminOrdersPage() {
@@ -83,25 +83,33 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Link href="/admin" className="text-sm text-gray-500 hover:text-amazon_blue flex items-center gap-1">
-            <ArrowLeft className="w-4 h-4" /> Dashboard
-          </Link>
-          <h1 className="text-2xl font-extrabold text-amazon_blue">Order Management</h1>
+    <div className="min-h-screen bg-[#0b0f19] py-8 px-4 md:px-8 text-slate-100">
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Header Bar */}
+        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <Link href="/admin" className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold mb-2">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+            </Link>
+            <h1 className="text-2xl md:text-3xl font-bold font-display text-white">Order Management</h1>
+            <p className="text-sm text-slate-400 mt-1">Review orders, update fulfillment statuses, and manage deliveries</p>
+          </div>
+          <span className="bg-slate-900 border border-slate-800 text-slate-400 text-xs px-3.5 py-1.5 rounded-full font-mono self-start sm:self-center">
+            Total Pages: {totalPages}
+          </span>
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex gap-2 flex-wrap mb-5">
+        <div className="flex gap-2 flex-wrap">
           {STATUSES.map((s) => (
             <button
               key={s}
               onClick={() => { setStatusFilter(s); setPage(1); }}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition ${
+              className={`px-4 py-2 text-xs font-semibold rounded-xl border transition ${
                 statusFilter === s
-                  ? 'bg-amazon_blue text-white border-amazon_blue'
-                  : 'bg-white text-gray-600 border-gray-300 hover:border-amazon_blue hover:text-amazon_blue'
+                  ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-lg shadow-cyan-500/10'
+                  : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
               }`}
             >
               {s.replace(/_/g, ' ')}
@@ -109,74 +117,75 @@ export default function AdminOrdersPage() {
           ))}
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Table Container */}
+        <div className="glass-panel rounded-2xl border border-slate-800/80 shadow-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="bg-slate-900/80 border-b border-slate-800/80">
                 <tr>
                   {['Order #', 'Customer', 'Total', 'Current Status', 'Date', 'Update Status'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide whitespace-nowrap">
+                    <th key={h} className="px-5 py-3.5 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-800/60">
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
                       {Array.from({ length: 6 }).map((_, j) => (
-                        <td key={j} className="px-4 py-3">
-                          <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                        <td key={j} className="px-5 py-4">
+                          <div className="h-4 bg-slate-800 rounded-lg animate-pulse" />
                         </td>
                       ))}
                     </tr>
                   ))
                 ) : orders.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-4 py-10 text-center text-gray-400 text-sm">
-                      No orders found
+                    <td colSpan={6} className="px-5 py-12 text-center text-slate-500 text-sm">
+                      No orders matching filter &quot;{statusFilter}&quot;
                     </td>
                   </tr>
                 ) : (
                   orders.map((order) => (
-                    <tr key={order._id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-3 font-mono text-xs font-semibold text-amazon_blue">
+                    <tr key={order._id} className="hover:bg-slate-800/40 transition">
+                      <td className="px-5 py-4 font-mono text-xs font-semibold text-cyan-400">
                         <Link href={`/orders/${order._id}`} className="hover:underline">
                           {order.orderNumber || order._id.toString().slice(-8).toUpperCase()}
                         </Link>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-800 text-xs">{order.userId?.name}</div>
-                        <div className="text-xs text-gray-400">{order.userId?.email}</div>
+                      <td className="px-5 py-4">
+                        <div className="font-medium text-slate-200 text-xs">{order.userId?.name}</div>
+                        <div className="text-[11px] text-slate-400 font-mono">{order.userId?.email}</div>
                       </td>
-                      <td className="px-4 py-3 font-bold text-gray-900">
+                      <td className="px-5 py-4 font-bold text-white font-display">
                         ${(order.pricing?.total ?? order.total ?? 0).toFixed(2)}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusColors[order.status] || 'bg-gray-100 text-gray-600'}`}>
+                      <td className="px-5 py-4">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${statusColors[order.status] || 'bg-slate-800 text-slate-400'}`}>
                           {order.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                      <td className="px-5 py-4 text-slate-400 text-xs font-mono whitespace-nowrap">
                         {new Date(order.placedAt).toLocaleDateString()}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <select
                             value={newStatus[order._id] || order.status}
                             onChange={(e) => setNewStatus((prev) => ({ ...prev, [order._id]: e.target.value }))}
-                            className="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-amazon_blue"
+                            className="text-xs bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-cyan-500"
                           >
                             {['placed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'].map((s) => (
-                              <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
+                              <option key={s} value={s} className="bg-slate-900 text-slate-200">{s.replace(/_/g, ' ')}</option>
                             ))}
                           </select>
                           <button
                             onClick={() => updateStatus(order._id)}
                             disabled={updatingId === order._id}
-                            className="p-1.5 bg-amazon_yellow hover:bg-amazon_yellow_hover text-amazon_blue rounded transition disabled:opacity-50"
+                            className="p-1.5 btn-gradient-primary text-slate-950 rounded-xl transition disabled:opacity-50 shadow-md"
+                            title="Apply new status"
                           >
                             <RefreshCw className={`w-3.5 h-3.5 ${updatingId === order._id ? 'animate-spin' : ''}`} />
                           </button>
@@ -191,20 +200,20 @@ export default function AdminOrdersPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
-              <span className="text-xs text-gray-500">Page {page} of {totalPages}</span>
+            <div className="px-6 py-4 border-t border-slate-800/80 flex items-center justify-between">
+              <span className="text-xs text-slate-400 font-mono">Page {page} of {totalPages}</span>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-3 py-1 text-xs border border-gray-300 rounded hover:border-amazon_blue disabled:opacity-50"
+                  className="px-4 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 text-slate-300 disabled:opacity-50 transition"
                 >
                   Prev
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-3 py-1 text-xs border border-gray-300 rounded hover:border-amazon_blue disabled:opacity-50"
+                  className="px-4 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded-xl hover:border-slate-700 text-slate-300 disabled:opacity-50 transition"
                 >
                   Next
                 </button>
@@ -216,3 +225,4 @@ export default function AdminOrdersPage() {
     </div>
   );
 }
+

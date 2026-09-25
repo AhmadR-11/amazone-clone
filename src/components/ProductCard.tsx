@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useWishlistStore } from '@/store/useWishlistStore';
 
@@ -26,16 +25,17 @@ interface Props {
   compact?: boolean;
 }
 
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80';
+
 export default function ProductCard({ product, compact = false }: Props) {
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
   const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const [imgError, setImgError] = useState(false);
 
   const discount =
     product.originalPrice && product.originalPrice > product.price
-      ? Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) * 100
-        )
+      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : null;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -44,7 +44,7 @@ export default function ProductCard({ product, compact = false }: Props) {
     addItem({
       asin: product.asin,
       title: product.title,
-      image: product.image,
+      image: imgError || !product.image ? FALLBACK_IMAGE : product.image,
       price: product.price,
     });
     openCart();
@@ -56,140 +56,127 @@ export default function ProductCard({ product, compact = false }: Props) {
     await toggleWishlist({
       asin: product.asin,
       title: product.title,
-      image: product.image,
+      image: imgError || !product.image ? FALLBACK_IMAGE : product.image,
       price: product.price,
       category: product.category,
     });
   };
 
-  const stars = Array.from({ length: 5 }, (_, i) => {
-    const filled = i < Math.floor(product.rating);
-    const half = !filled && i < product.rating;
-    return { filled, half };
-  });
+  const isLiked = isInWishlist(product.asin);
+  const imgSrc = imgError || !product.image ? FALLBACK_IMAGE : product.image;
 
   return (
-    <Link href={`/product/${product.asin}`} className="group">
+    <Link href={`/product/${product.asin}`} className="group h-full flex">
       <div
-        className={`bg-white rounded-md border border-gray-200 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 flex flex-col overflow-hidden h-full ${
-          compact ? 'p-3' : 'p-4'
+        className={`w-full bg-white rounded-[26px] border border-slate-200/90 hover:border-blue-500/40 p-5 flex flex-col justify-between relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 ${
+          compact ? 'p-3.5' : 'p-5'
         }`}
       >
-        {/* Badge */}
-        {product.badge && (
-          <div className="text-xs font-semibold text-white bg-amazon-orange-btn px-2 py-0.5 rounded w-fit mb-2">
-            {product.badge}
-          </div>
-        )}
+        <div>
+          {/* Top Badges & Wishlist Trigger */}
+          <div className="flex items-center justify-between gap-2 mb-3 min-h-[26px]">
+            {product.badge ? (
+              <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-700 border border-blue-400/20 px-3 py-1 rounded-full">
+                {product.badge}
+              </span>
+            ) : discount ? (
+              <span className="inline-flex items-center text-[10px] font-black uppercase tracking-widest bg-rose-500/10 text-rose-700 border border-rose-400/20 px-3 py-1 rounded-full">
+                -{discount}% OFF
+              </span>
+            ) : (
+              <div />
+            )}
 
-        {/* Image */}
-        <div
-          className={`relative flex items-center justify-center overflow-hidden bg-gray-50 rounded ${
-            compact ? 'h-36 mb-2' : 'h-48 mb-3'
-          }`}
-        >
-          <img
-            src={product.image}
-            alt={product.title}
-            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-200"
-            loading="lazy"
-          />
-          {discount && (
-            <div className="absolute top-1 left-1 bg-red-600 text-white text-xs font-bold px-1.5 py-0.5 rounded">
-              -{discount}%
-            </div>
+            {!compact && (
+              <button
+                onClick={handleToggleWishlist}
+                title={isLiked ? 'Saved to Wishlist' : 'Save to Wishlist'}
+                className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
+                  isLiked
+                    ? 'text-rose-600 bg-rose-50 border border-rose-200'
+                    : 'text-slate-400 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                {isLiked ? 'Saved' : 'Save'}
+              </button>
+            )}
+          </div>
+
+          {/* Product Image Container */}
+          <div
+            className={`relative flex items-center justify-center bg-slate-50/70 rounded-[20px] p-4 border border-slate-100 mb-4 overflow-hidden group-hover:bg-slate-100/80 transition-colors duration-500 ${
+              compact ? 'h-36' : 'h-52'
+            }`}
+          >
+            <img
+              src={imgSrc}
+              alt={product.title}
+              onError={() => setImgError(true)}
+              className="max-h-full max-w-full object-contain group-hover:scale-108 transition-transform duration-700 ease-out"
+              loading="lazy"
+            />
+          </div>
+
+          {/* Brand Tag */}
+          {product.brand && !compact && (
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 font-mono">
+              {product.brand}
+            </p>
           )}
-          {/* Wishlist Heart Button */}
-          {!compact && (
+
+          {/* Title */}
+          <h3
+            className={`font-extrabold text-slate-950 leading-snug mb-2.5 group-hover:text-blue-600 transition-colors line-clamp-2 font-sans tracking-tight ${
+              compact ? 'text-xs' : 'text-sm sm:text-[15px]'
+            }`}
+          >
+            {product.title}
+          </h3>
+
+          {/* Clean Rating Badge - Zero Clutter */}
+          <div className="flex items-center gap-2 mb-4">
+            <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-900 border border-amber-200/80 text-[11px] font-black px-2.5 py-0.5 rounded-full">
+              <span>★</span>
+              <span>{product.rating.toFixed(1)}</span>
+            </span>
+            <span className="text-[11px] text-slate-400 font-bold">
+              {product.reviewCount?.toLocaleString()} reviews
+            </span>
+          </div>
+        </div>
+
+        {/* Price & Primary Action Footer */}
+        <div className="pt-3.5 border-t border-slate-100 mt-auto flex items-center justify-between gap-3">
+          <div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-lg sm:text-xl font-black text-slate-950 font-sans tracking-tight">
+                ${product.price.toFixed(2)}
+              </span>
+              {product.originalPrice && product.originalPrice > product.price && (
+                <span className="text-xs text-slate-400 line-through font-semibold">
+                  ${product.originalPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Text-Based Executive Add to Cart Button (NO ICON SLOP) */}
+          {!compact && product.inStock && (
             <button
-              onClick={handleToggleWishlist}
-              title={isInWishlist(product.asin) ? 'Remove from Wish List' : 'Add to Wish List'}
-              className={`absolute top-1 right-1 p-1.5 rounded-full shadow transition-all duration-200 opacity-0 group-hover:opacity-100 ${
-                isInWishlist(product.asin)
-                  ? 'bg-red-50 text-red-500 opacity-100'
-                  : 'bg-white/90 text-gray-400 hover:text-red-500'
-              }`}
+              onClick={handleAddToCart}
+              className="px-4 py-2 rounded-full bg-slate-950 hover:bg-blue-600 text-white text-xs font-black tracking-wider uppercase transition-all duration-300 shadow-md hover:shadow-blue-500/25 hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
+              aria-label={`Add ${product.title} to cart`}
             >
-              <Heart
-                size={15}
-                className={isInWishlist(product.asin) ? 'fill-red-500 text-red-500' : ''}
-              />
+              Add to Cart
             </button>
           )}
-        </div>
 
-        {/* Title */}
-        <h3
-          className={`text-amazon-teal font-medium leading-snug mb-1 group-hover:underline line-clamp-2 flex-1 ${
-            compact ? 'text-xs' : 'text-sm'
-          }`}
-        >
-          {product.title}
-        </h3>
-
-        {/* Brand */}
-        {product.brand && !compact && (
-          <p className="text-xs text-gray-500 mb-1">{product.brand}</p>
-        )}
-
-        {/* Stars */}
-        <div className="flex items-center gap-1 mb-1">
-          <div className="flex">
-            {stars.map((star, i) => (
-              <Star
-                key={i}
-                size={12}
-                className={
-                  star.filled || star.half
-                    ? 'fill-amazon-orange text-amazon-orange'
-                    : 'text-gray-300'
-                }
-              />
-            ))}
-          </div>
-          <span className="text-xs text-amazon-teal hover:underline">
-            {product.reviewCount.toLocaleString()}
-          </span>
-        </div>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className={`font-bold text-gray-900 ${compact ? 'text-sm' : 'text-base'}`}>
-            ${product.price.toFixed(2)}
-          </span>
-          {product.originalPrice && (
-            <span className="text-xs text-gray-500 line-through">
-              ${product.originalPrice.toFixed(2)}
+          {!product.inStock && (
+            <span className="text-[10px] text-rose-600 font-black uppercase tracking-wider px-3 py-1 bg-rose-50 rounded-full border border-rose-200">
+              Sold Out
             </span>
           )}
         </div>
-
-        {/* Prime Badge */}
-        {product.isPrime && (
-          <div className="flex items-center gap-1 mb-2">
-            <span className="text-xs font-bold text-amazon-dark bg-amazon-yellow px-1 rounded">
-              prime
-            </span>
-            <span className="text-xs text-gray-600">FREE Delivery</span>
-          </div>
-        )}
-
-        {/* Add to Cart */}
-        {!compact && product.inStock && (
-          <button
-            onClick={handleAddToCart}
-            className="w-full mt-auto bg-amazon-yellow hover:bg-amazon-yellow-hover text-amazon-dark font-semibold text-sm py-1.5 px-3 rounded-full transition-colors flex items-center justify-center gap-2"
-          >
-            <ShoppingCart size={14} />
-            Add to Cart
-          </button>
-        )}
-
-        {!product.inStock && (
-          <p className="text-xs text-red-600 font-semibold mt-auto">
-            Currently unavailable
-          </p>
-        )}
       </div>
     </Link>
   );
