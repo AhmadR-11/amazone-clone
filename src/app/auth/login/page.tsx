@@ -95,17 +95,9 @@ function LoginForm() {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-[11px] font-black text-slate-700 uppercase tracking-wider font-mono">
-              Password
-            </label>
-            <Link
-              href="/auth/forgot-password"
-              className="text-xs font-extrabold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
-            >
-              Forgot password?
-            </Link>
-          </div>
+          <label className="block text-[11px] font-black text-slate-700 mb-1.5 uppercase tracking-wider font-mono">
+            Password
+          </label>
           <div className="relative">
             <input
               ref={passwordInputRef}
@@ -143,6 +135,13 @@ function LoginForm() {
             />
             <span className="text-xs font-bold text-slate-600">Remember me</span>
           </label>
+
+          <Link
+            href="/auth/forgot-password"
+            className="text-xs font-extrabold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+          >
+            Forgot password?
+          </Link>
         </div>
 
         <button
