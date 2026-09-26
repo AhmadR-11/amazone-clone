@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, CheckCircle2, Sparkles } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import CartConfirmationModal, { ConfirmationItem } from '@/components/CartConfirmationModal';
 
 export default function CartDrawer() {
-  const { items, isOpen, closeCart, removeItem, updateQty, totalItems, totalPrice } =
+  const { items, isOpen, closeCart, removeItem, updateQty, clearCart, totalItems, totalPrice } =
     useCartStore();
   const { isAuthenticated } = useAuthStore();
 
   const drawerRef = useRef<HTMLDivElement>(null);
+  const [itemToRemove, setItemToRemove] = useState<ConfirmationItem | null>(null);
+  const [showClearModal, setShowClearModal] = useState<boolean>(false);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -42,6 +45,34 @@ export default function CartDrawer() {
   const freeShippingThreshold = 50;
   const amountToFreeShipping = Math.max(0, freeShippingThreshold - price);
   const progressPercent = Math.min(100, (price / freeShippingThreshold) * 100);
+
+  const handleDecreaseQty = (item: any) => {
+    if (item.quantity === 1) {
+      setItemToRemove({
+        asin: item.asin,
+        title: item.title,
+        image: item.image,
+        price: item.price,
+        color: item.color,
+        size: item.size,
+        quantity: item.quantity,
+      });
+    } else {
+      updateQty(item.asin, item.quantity - 1, item.color, item.size);
+    }
+  };
+
+  const handleRemoveClick = (item: any) => {
+    setItemToRemove({
+      asin: item.asin,
+      title: item.title,
+      image: item.image,
+      price: item.price,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity,
+    });
+  };
 
   return (
     <>
@@ -84,13 +115,23 @@ export default function CartDrawer() {
             </div>
           </div>
 
-          <button
-            onClick={closeCart}
-            className="p-2 rounded-full text-slate-400 hover:text-slate-950 hover:bg-slate-100 transition-all cursor-pointer active:scale-95"
-            aria-label="Close cart drawer"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            {count > 0 && (
+              <button
+                onClick={() => setShowClearModal(true)}
+                className="text-[11px] font-semibold text-rose-600 hover:underline mr-1 cursor-pointer"
+              >
+                Clear Bag
+              </button>
+            )}
+            <button
+              onClick={closeCart}
+              className="p-2 rounded-full text-slate-400 hover:text-slate-950 hover:bg-slate-100 transition-all cursor-pointer active:scale-95"
+              aria-label="Close cart drawer"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Free Shipping Progress Indicator (Visible when cart has items) */}
@@ -186,9 +227,7 @@ export default function CartDrawer() {
                           {/* Quantity Capsule */}
                           <div className="flex items-center bg-slate-100/90 border border-slate-200/80 rounded-full px-2 py-0.5 gap-1.5">
                             <button
-                              onClick={() =>
-                                updateQty(item.asin, item.quantity - 1, item.color, item.size)
-                              }
+                              onClick={() => handleDecreaseQty(item)}
                               className="w-6 h-6 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-950 hover:bg-white active:scale-90 transition-all cursor-pointer"
                               aria-label="Decrease quantity"
                             >
@@ -210,7 +249,7 @@ export default function CartDrawer() {
 
                           {/* Delete Item Button */}
                           <button
-                            onClick={() => removeItem(item.asin, item.color, item.size)}
+                            onClick={() => handleRemoveClick(item)}
                             className="p-1.5 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer active:scale-90"
                             aria-label="Remove item from bag"
                           >
@@ -264,11 +303,38 @@ export default function CartDrawer() {
             </div>
 
             <p className="text-[10px] text-center text-slate-500 flex items-center justify-center gap-1.5 pt-1 font-medium">
-              <ShieldCheck size={13} className="text-emerald-600" /> 256-Bit SSL Encrypted Secure Checkout
+              <ShieldCheck size={13} className="text-emerald-600" /> Encrypted &amp; Secure Checkout
             </p>
           </div>
         )}
       </div>
+
+      {/* Item Removal Confirmation Modal */}
+      <CartConfirmationModal
+        isOpen={!!itemToRemove}
+        onClose={() => setItemToRemove(null)}
+        onConfirm={() => {
+          if (itemToRemove) {
+            removeItem(itemToRemove.asin, itemToRemove.color, itemToRemove.size);
+            setItemToRemove(null);
+          }
+        }}
+        type="item"
+        item={itemToRemove}
+      />
+
+      {/* Clear Cart Confirmation Modal */}
+      <CartConfirmationModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={() => {
+          clearCart();
+          setShowClearModal(false);
+        }}
+        type="clear"
+        totalCount={count}
+      />
     </>
   );
 }
+

@@ -145,32 +145,42 @@ export default function OrdersPage() {
 
                   {/* Items list */}
                   <div className="p-4 sm:p-6 divide-y divide-slate-100">
-                    {order.items?.map((item, idx) => (
-                      <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 rounded-lg bg-slate-50 p-2 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                            <img src={item.image || '/placeholder.png'} alt={item.title} className="max-h-full max-w-full object-contain mix-blend-multiply" />
-                          </div>
-                          <div>
-                            <Link href={`/product/${item.asin}`} className="font-bold text-xs text-slate-900 hover:text-blue-600 line-clamp-2 transition-colors">
-                              {item.title}
-                            </Link>
-                            <div className="text-[11px] text-slate-500 mt-0.5 font-medium">
-                              Qty: {item.quantity} × ${item.price?.toFixed(2)}
+                    {order.items?.map((item: any, idx: number) => {
+                      const itemImg = item.image || item.imageUrl || item.img || (item.productId && item.productId.image) || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80';
+                      return (
+                        <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-lg bg-slate-50 p-2 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                              <img
+                                src={itemImg}
+                                alt={item.title}
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80';
+                                }}
+                                className="max-h-full max-w-full object-contain mix-blend-multiply"
+                              />
+                            </div>
+                            <div>
+                              <Link href={`/product/${item.asin}`} className="font-bold text-xs text-slate-900 hover:text-blue-600 line-clamp-2 transition-colors">
+                                {item.title}
+                              </Link>
+                              <div className="text-[11px] text-slate-500 mt-0.5 font-medium">
+                                Qty: {item.quantity} × ${item.price?.toFixed(2)}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
-                          <button
-                            onClick={() => handleReorder(item)}
-                            className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors"
-                          >
-                            <RefreshCw className="w-3.5 h-3.5" /> Buy Again
-                          </button>
+                          <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <button
+                              onClick={() => handleReorder(item)}
+                              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" /> Buy Again
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );

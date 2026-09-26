@@ -6,12 +6,17 @@ import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/useCartStore';
 import { Trash2, ShieldCheck, Clock, ArrowRight, ShoppingBag, Plus, Minus, Tag, CheckCircle2, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CartConfirmationModal, { ConfirmationItem } from '@/components/CartConfirmationModal';
 
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQty, removeItem, clearCart, syncFromServer, getTotalPrice, getTotalCount } = useCartStore();
   const [loading, setLoading] = useState<boolean>(true);
   const [sessionInfo, setSessionInfo] = useState<any>(null);
+
+  // Modal states
+  const [itemToRemove, setItemToRemove] = useState<ConfirmationItem | null>(null);
+  const [showClearModal, setShowClearModal] = useState<boolean>(false);
 
   useEffect(() => {
     const initCart = async () => {
@@ -43,6 +48,34 @@ export default function CartPage() {
       return;
     }
     router.push('/checkout');
+  };
+
+  const handleDecreaseQty = (item: any, asin: string, price: number, image: string, title: string) => {
+    if (item.quantity === 1) {
+      setItemToRemove({
+        asin,
+        title,
+        image,
+        price,
+        color: item.color,
+        size: item.size,
+        quantity: item.quantity,
+      });
+    } else {
+      updateQty(asin, item.quantity - 1, item.color, item.size);
+    }
+  };
+
+  const handleRemoveClick = (item: any, asin: string, price: number, image: string, title: string) => {
+    setItemToRemove({
+      asin,
+      title,
+      image,
+      price,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity,
+    });
   };
 
   if (loading) {
@@ -88,10 +121,8 @@ export default function CartPage() {
           </div>
           {items.length > 0 && (
             <button
-              onClick={() => {
-                if (confirm('Clear all items from your bag?')) clearCart();
-              }}
-              className="text-xs text-rose-600 hover:underline font-semibold"
+              onClick={() => setShowClearModal(true)}
+              className="text-xs text-rose-600 hover:underline font-semibold cursor-pointer"
             >
               Clear Bag
             </button>
@@ -179,23 +210,25 @@ export default function CartPage() {
                         <div className="flex items-center gap-4 mt-3 pt-3 border-t border-slate-100">
                           <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
                             <button
-                              onClick={() => updateQty(asin, Math.max(1, item.quantity - 1), item.color, item.size)}
-                              className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition font-bold text-xs"
+                              onClick={() => handleDecreaseQty(item, asin, price, image, title)}
+                              className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition font-bold text-xs cursor-pointer"
+                              aria-label="Decrease quantity"
                             >
                               -
                             </button>
                             <span className="px-3 font-bold text-slate-900 text-xs">{item.quantity}</span>
                             <button
                               onClick={() => updateQty(asin, item.quantity + 1, item.color, item.size)}
-                              className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition font-bold text-xs"
+                              className="px-2.5 py-1 text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 transition font-bold text-xs cursor-pointer"
+                              aria-label="Increase quantity"
                             >
                               +
                             </button>
                           </div>
 
                           <button
-                            onClick={() => removeItem(asin, item.color, item.size)}
-                            className="text-xs text-slate-400 hover:text-rose-600 font-medium flex items-center gap-1 transition"
+                            onClick={() => handleRemoveClick(item, asin, price, image, title)}
+                            className="text-xs text-slate-400 hover:text-rose-600 font-medium flex items-center gap-1 transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" /> Remove
                           </button>
@@ -247,14 +280,14 @@ export default function CartPage() {
 
                 <button
                   onClick={handleProceedToCheckout}
-                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-colors"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <span>Proceed to Checkout</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
                 <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 text-center pt-1 font-medium">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" /> 256-Bit Encrypted Checkout
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" /> Encrypted &amp; Secure Checkout
                 </div>
               </div>
             </div>
@@ -262,6 +295,33 @@ export default function CartPage() {
 
         </div>
       </div>
+
+      {/* Confirmation Modal for Single Item Removal */}
+      <CartConfirmationModal
+        isOpen={!!itemToRemove}
+        onClose={() => setItemToRemove(null)}
+        onConfirm={() => {
+          if (itemToRemove) {
+            removeItem(itemToRemove.asin, itemToRemove.color, itemToRemove.size);
+            setItemToRemove(null);
+          }
+        }}
+        type="item"
+        item={itemToRemove}
+      />
+
+      {/* Confirmation Modal for Clear Bag */}
+      <CartConfirmationModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={() => {
+          clearCart();
+          setShowClearModal(false);
+        }}
+        type="clear"
+        totalCount={totalCount}
+      />
     </div>
   );
 }
+

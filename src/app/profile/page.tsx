@@ -8,6 +8,7 @@ import {
   Pencil, X, ShieldCheck
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { COUNTRIES } from '@/lib/constants/countries';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuthStore();
@@ -24,6 +25,8 @@ export default function ProfilePage() {
   // New address form state
   const [showAddressForm, setShowAddressForm] = useState<boolean>(false);
   const [isSavingAddress, setIsSavingAddress] = useState<boolean>(false);
+  const [phonePrefix, setPhonePrefix] = useState<string>('+1');
+  const [phoneNumber, setPhoneNumber] = useState<string>('');
   const [newAddr, setNewAddr] = useState({
     fullName: '',
     street: '',
@@ -31,7 +34,6 @@ export default function ProfilePage() {
     state: '',
     zipCode: '',
     country: 'United States',
-    phone: '',
     isDefault: false,
   });
 
@@ -134,12 +136,15 @@ export default function ProfilePage() {
   const handleAddAddress = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingAddress(true);
+    const combinedPhone = `${phonePrefix} ${phoneNumber.trim()}`.trim();
+
     try {
       const res = await fetch('/api/user/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newAddr,
+          phone: combinedPhone,
           postalCode: newAddr.zipCode,
         }),
       });
@@ -150,6 +155,7 @@ export default function ProfilePage() {
       toast.success('Address saved successfully!');
       setAddresses(data.addresses || []);
       setShowAddressForm(false);
+      setPhoneNumber('');
       setNewAddr({
         fullName: '',
         street: '',
@@ -157,7 +163,6 @@ export default function ProfilePage() {
         state: '',
         zipCode: '',
         country: 'United States',
-        phone: '',
         isDefault: false,
       });
     } catch (err: any) {
@@ -464,14 +469,25 @@ export default function ProfilePage() {
                   onChange={(e) => setNewAddr({ ...newAddr, fullName: e.target.value })}
                   className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <input
-                  type="text"
-                  placeholder="Phone Number (e.g. +1 555-0199)"
-                  required
-                  value={newAddr.phone}
-                  onChange={(e) => setNewAddr({ ...newAddr, phone: e.target.value })}
-                  className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+
+                {/* Country Selector */}
+                <select
+                  value={newAddr.country}
+                  onChange={(e) => {
+                    const selectedCountry = COUNTRIES.find((c) => c.name === e.target.value);
+                    setNewAddr({ ...newAddr, country: e.target.value });
+                    if (selectedCountry) setPhonePrefix(selectedCountry.phoneCode);
+                  }}
+                  className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium cursor-pointer"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.name}>
+                      {c.flag} {c.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Street Address */}
                 <input
                   type="text"
                   placeholder="Street Address (e.g. 123 Main St, Suite 4B)"
@@ -480,6 +496,8 @@ export default function ProfilePage() {
                   onChange={(e) => setNewAddr({ ...newAddr, street: e.target.value })}
                   className="sm:col-span-2 p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+
+                {/* City */}
                 <input
                   type="text"
                   placeholder="City"
@@ -488,6 +506,8 @@ export default function ProfilePage() {
                   onChange={(e) => setNewAddr({ ...newAddr, city: e.target.value })}
                   className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+
+                {/* State */}
                 <input
                   type="text"
                   placeholder="State / Province / Region"
@@ -496,6 +516,8 @@ export default function ProfilePage() {
                   onChange={(e) => setNewAddr({ ...newAddr, state: e.target.value })}
                   className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+
+                {/* Zip Code */}
                 <input
                   type="text"
                   placeholder="Zip / Postal Code"
@@ -504,14 +526,29 @@ export default function ProfilePage() {
                   onChange={(e) => setNewAddr({ ...newAddr, zipCode: e.target.value })}
                   className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <input
-                  type="text"
-                  placeholder="Country"
-                  required
-                  value={newAddr.country}
-                  onChange={(e) => setNewAddr({ ...newAddr, country: e.target.value })}
-                  className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+
+                {/* Phone Code Prefix + Phone Input */}
+                <div className="flex gap-2">
+                  <select
+                    value={phonePrefix}
+                    onChange={(e) => setPhonePrefix(e.target.value)}
+                    className="p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono font-bold cursor-pointer"
+                  >
+                    {COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.phoneCode}>
+                        {c.flag} {c.phoneCode} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    placeholder="Phone Number (e.g. 555-0199)"
+                    required
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="flex-1 p-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-2 pt-2">

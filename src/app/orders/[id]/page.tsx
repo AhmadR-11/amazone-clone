@@ -176,37 +176,47 @@ export default function OrderDetailPage() {
         <div className="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200/90 shadow-sm">
           <h2 className="text-base font-bold text-slate-900 mb-4 font-display">Items in this Order</h2>
           <div className="divide-y divide-slate-100">
-            {order.items?.map((item: any, idx: number) => (
-              <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-lg bg-slate-50 p-2 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                    <img src={item.image || '/placeholder.png'} alt={item.title} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+            {order.items?.map((item: any, idx: number) => {
+              const itemImg = item.image || item.imageUrl || item.img || (item.productId && item.productId.image) || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80';
+              return (
+                <div key={idx} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-lg bg-slate-50 p-2 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                      <img
+                        src={itemImg}
+                        alt={item.title}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&q=80';
+                        }}
+                        className="max-h-full max-w-full object-contain mix-blend-multiply"
+                      />
+                    </div>
+                    <div className="text-xs">
+                      <Link href={`/product/${item.asin}`} className="font-bold text-slate-900 hover:text-blue-600 line-clamp-2 transition-colors">
+                        {item.title}
+                      </Link>
+                      <div className="text-slate-500 mt-1 font-medium">Quantity: {item.quantity} × ${item.price?.toFixed(2)}</div>
+                    </div>
                   </div>
-                  <div className="text-xs">
-                    <Link href={`/product/${item.asin}`} className="font-bold text-slate-900 hover:text-blue-600 line-clamp-2 transition-colors">
-                      {item.title}
-                    </Link>
-                    <div className="text-slate-500 mt-1 font-medium">Quantity: {item.quantity} × ${item.price?.toFixed(2)}</div>
-                  </div>
-                </div>
 
-                <button
-                  onClick={() => {
-                    addItem({
-                      asin: item.asin,
-                      title: item.title,
-                      image: item.image,
-                      price: item.price,
-                      quantity: 1,
-                    });
-                    toast.success('Added to bag');
-                  }}
-                  className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" /> Reorder
-                </button>
-              </div>
-            ))}
+                  <button
+                    onClick={() => {
+                      addItem({
+                        asin: item.asin,
+                        title: item.title,
+                        image: itemImg,
+                        price: item.price,
+                        quantity: 1,
+                      });
+                      toast.success('Added to bag');
+                    }}
+                    className="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Reorder
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
 
