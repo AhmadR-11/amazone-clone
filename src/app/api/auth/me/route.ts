@@ -1,6 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/db';
+import User from '@/lib/models/User';
 import {
   getUserSessionFromCookies,
   getSessionTimeRemaining,
@@ -42,15 +44,29 @@ export async function GET() {
       });
     }
 
+    let avatar = undefined;
+    let name = session.name;
+    try {
+      await connectToDatabase();
+      const dbUser = await User.findById(session.userId, 'name avatar role').lean();
+      if (dbUser) {
+        avatar = (dbUser as any).avatar;
+        if ((dbUser as any).name) name = (dbUser as any).name;
+      }
+    } catch (e) {
+      // ignore db error, fall back to session
+    }
+
     return NextResponse.json({
       isGuest: false,
       sessionTimeRemaining: getSessionTimeRemaining(session),
       user: {
         id: session.userId,
         userId: session.userId,
-        name: session.name,
+        name: name,
         email: session.email,
         role: session.role || 'user',
+        avatar: avatar,
       },
     });
   } catch (error: any) {

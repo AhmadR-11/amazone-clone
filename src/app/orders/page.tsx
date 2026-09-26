@@ -69,19 +69,19 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 py-6 sm:py-8 px-3 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display">Your Order History</h1>
+            <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 font-display">Your Order History</h1>
           </div>
-          <span className="text-xs text-slate-600 font-bold bg-slate-200/70 px-3 py-1 rounded-full">
+          <span className="text-xs text-slate-600 font-bold bg-slate-200/70 px-3 py-1 rounded-full whitespace-nowrap">
             {orders.length} {orders.length === 1 ? 'order' : 'orders'} placed
           </span>
         </div>
 
         {orders.length === 0 ? (
-          <div className="bg-white p-16 rounded-2xl text-center border border-slate-200/90 shadow-sm">
+          <div className="bg-white p-8 sm:p-16 rounded-2xl text-center border border-slate-200/90 shadow-sm">
             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200">
               <Package className="w-8 h-8 text-slate-400" />
             </div>
@@ -97,11 +97,11 @@ export default function OrdersPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {orders.map((order) => {
               const formattedDate = new Date(order.createdAt).toLocaleDateString('en-US', {
                 year: 'numeric',
-                month: 'long',
+                month: 'short',
                 day: 'numeric',
               });
 
@@ -109,10 +109,10 @@ export default function OrdersPage() {
                 <div key={order._id} className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-sm hover:border-slate-300 transition-all">
                   
                   {/* Order Header Bar */}
-                  <div className="bg-slate-50 px-6 py-4 border-b border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs text-slate-600">
+                  <div className="bg-slate-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200/80 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs text-slate-600">
                     <div>
                       <div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Order Date</div>
-                      <div className="font-extrabold text-slate-900 mt-0.5">{formattedDate}</div>
+                      <div className="font-extrabold text-slate-900 mt-0.5 truncate">{formattedDate}</div>
                     </div>
                     <div>
                       <div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Total Amount</div>
@@ -127,24 +127,24 @@ export default function OrdersPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Order # {order._id.substring(0, 10)}...</div>
-                      <Link href={`/orders/${order._id}`} className="text-blue-600 font-bold hover:underline flex items-center justify-end gap-0.5 mt-0.5">
+                      <div className="font-bold uppercase tracking-wider text-[10px] text-slate-400 truncate">Order #{order._id.substring(0, 8)}...</div>
+                      <Link href={`/orders/${order._id}`} className="text-blue-600 font-bold hover:underline inline-flex items-center justify-end gap-0.5 mt-0.5">
                         View Details &rarr;
                       </Link>
                     </div>
                   </div>
 
                   {/* Status Banner */}
-                  <div className="px-6 py-3 bg-white border-b border-slate-100 flex items-center justify-between text-xs">
+                  <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-white border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
                     <div className="flex items-center gap-2 text-slate-700 font-bold">
-                      <Truck className="w-4 h-4 text-blue-600" />
+                      <Truck className="w-4 h-4 text-blue-600 flex-shrink-0" />
                       <span>Status: <strong className="capitalize text-slate-900">{order.status || 'Processing'}</strong></span>
                     </div>
-                    <span className="text-slate-400 text-[11px] font-medium">Standard Delivery: 2-3 Business Days</span>
+                    <span className="text-slate-400 text-[11px] font-medium">Standard Delivery: 2–3 Business Days</span>
                   </div>
 
                   {/* Items list */}
-                  <div className="p-6 divide-y divide-slate-100">
+                  <div className="p-4 sm:p-6 divide-y divide-slate-100">
                     {order.items?.map((item, idx) => (
                       <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">

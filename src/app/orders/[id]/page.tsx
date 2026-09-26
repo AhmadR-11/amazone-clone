@@ -138,7 +138,20 @@ export default function OrderDetailPage() {
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-2">
                 <div className="flex justify-between">
                   <span>Method:</span>
-                  <span className="font-bold text-slate-900 capitalize">{order.paymentMethod?.replace('_', ' ') || 'Credit Card'}</span>
+                  <span className="font-bold text-slate-900 capitalize">
+                    {(() => {
+                      const pm = order.paymentMethod;
+                      if (!pm) return 'Credit Card';
+                      if (typeof pm === 'string') return pm.replace(/_/g, ' ');
+                      if (typeof pm === 'object') {
+                        if (pm.brand && pm.last4) return `${pm.brand} •••• ${pm.last4}`;
+                        if (pm.type === 'cod') return 'Cash on Delivery';
+                        if (pm.type === 'amazon_pay') return 'Digital Wallet';
+                        if (pm.type) return String(pm.type).replace(/_/g, ' ');
+                      }
+                      return 'Credit Card';
+                    })()}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Subtotal:</span>

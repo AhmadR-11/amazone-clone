@@ -90,6 +90,7 @@ export const UserHistorySchema = z.discriminatedUnion('type', [
 export const UpdateProfileSchema = z.object({
   name: z.string().min(2).max(80).optional(),
   email: z.string().email().optional(),
+  avatar: z.string().optional(),
 });
 
 export const ChangePasswordSchema = z

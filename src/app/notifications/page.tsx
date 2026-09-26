@@ -42,17 +42,23 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     const load = async () => {
-      const authRes = await fetch('/api/auth/me');
-      if (!authRes.ok) {
-        router.push('/auth/login?returnUrl=/notifications');
-        return;
+      try {
+        const authRes = await fetch('/api/auth/me');
+        const authData = await authRes.json().catch(() => ({}));
+        if (!authRes.ok || authData.isGuest || !authData.user) {
+          router.push('/auth/login?returnUrl=/notifications');
+          return;
+        }
+        const res = await fetch('/api/notifications');
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+        }
+      } catch (err) {
+        console.error('Failed to load notifications:', err);
+      } finally {
+        setLoading(false);
       }
-      const res = await fetch('/api/notifications');
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data.notifications || []);
-      }
-      setLoading(false);
     };
     load();
   }, [router]);

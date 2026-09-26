@@ -9,6 +9,7 @@ export interface AuthUser {
   name: string;
   email: string;
   role?: 'user' | 'admin';
+  avatar?: string;
   isGuest?: boolean;
   sessionTimeRemaining?: string;
 }
@@ -28,7 +29,6 @@ export const useAuthStore = create<AuthStore>()(
     (set, get) => ({
       user: null,
       isLoading: true,
-
       setUser: (user) => set({ user }),
       clearUser: () => set({ user: null }),
       setLoading: (loading) => set({ isLoading: loading }),
@@ -50,6 +50,7 @@ export const useAuthStore = create<AuthStore>()(
                 name: data.user.name,
                 email: data.user.email,
                 role: data.user.role || 'user',
+                avatar: data.user.avatar,
                 isGuest: false,
                 sessionTimeRemaining: data.sessionTimeRemaining,
               },
