@@ -24,6 +24,16 @@ export const LoginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
+export const ForgotPasswordRequestSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+export const ForgotPasswordResetSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  otp: z.string().trim().length(6, 'Verification code must be 6 digits'),
+  newPassword: z.string().min(6, 'Password must be at least 6 characters').max(100),
+});
+
 // ─── Address ──────────────────────────────────────────────────────────────
 export const AddressSchema = z.object({
   fullName: z.string().min(2).max(100),

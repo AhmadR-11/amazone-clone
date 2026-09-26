@@ -99,16 +99,12 @@ function LoginForm() {
             <label className="block text-[11px] font-black text-slate-700 uppercase tracking-wider font-mono">
               Password
             </label>
-            <a
-              href="#forgot-password"
-              onClick={(e) => {
-                e.preventDefault();
-                alert('Please contact support or register a new account to reset credentials.');
-              }}
+            <Link
+              href="/auth/forgot-password"
               className="text-xs font-extrabold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
           <div className="relative">
             <input
