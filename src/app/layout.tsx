@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/Navbar';
-import SubNav from '@/components/SubNav';
-import Footer from '@/components/Footer';
-import CartDrawer from '@/components/CartDrawer';
+import ClientLayoutWrapper from '@/components/ClientLayoutWrapper';
 import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
@@ -35,13 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.className}>
       <body id="top" className="bg-[#f8fafc] text-slate-900 min-h-screen flex flex-col w-full overflow-x-hidden antialiased">
-        <Navbar />
-        <SubNav />
-        <main className="flex-1">{children}</main>
-        <Footer />
-
-        {/* Global Cart Drawer */}
-        <CartDrawer />
+        <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
 
         {/* Global Toast Notifications */}
         <Toaster
